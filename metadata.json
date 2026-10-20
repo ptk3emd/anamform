@@ -1,0 +1,6 @@
+{
+  "name": "AnamneseFlow - Typeform FHIR & openEHR",
+  "description": "Coleta conversacional de anamnese médica baseada em FHIR R4 Questionnaire, interoperável com openEHR EHRbase e padrão Typeform.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
