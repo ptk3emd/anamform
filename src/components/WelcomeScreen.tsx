@@ -12,6 +12,7 @@ import { ThemeConfig } from '../types/theme';
 interface WelcomeScreenProps {
   questionnaire: Questionnaire;
   onStart: () => void;
+  onLoadSample?: () => void;
   theme: ThemeConfig;
   answeredCount: number;
 }
@@ -19,6 +20,7 @@ interface WelcomeScreenProps {
 export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
   questionnaire,
   onStart,
+  onLoadSample,
   theme,
   answeredCount,
 }) => {
@@ -72,8 +74,8 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
         <span>LGPD / Sigilo Médico</span>
       </div>
 
-      {/* Start Button */}
-      <div className="flex items-center gap-4">
+      {/* Start Button & Quick Actions */}
+      <div className="flex flex-wrap items-center gap-4">
         <button
           type="button"
           data-testid="start-anamnese-btn"
@@ -84,6 +86,18 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           <span>{answeredCount > 0 ? 'Continuar Anamnese' : 'Iniciar Anamnese'}</span>
           <ArrowRight className="w-5 h-5 stroke-[2.5]" />
         </button>
+
+        {onLoadSample && answeredCount === 0 && (
+          <button
+            type="button"
+            onClick={onLoadSample}
+            className="flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white border border-[#2A222B]/15 text-[#2A222B] hover:bg-slate-50 font-medium text-sm transition-all shadow-xs cursor-pointer"
+            title="Carregar caso pré-preenchido de 144 itens para teste rápido"
+          >
+            <span>Carregar Caso Clínico (SCA)</span>
+          </button>
+        )}
+
         <span className="text-xs text-[#2A222B]/50 font-medium hidden sm:inline">
           pressione <strong className="font-semibold text-[#2A222B]/70">Enter ↵</strong>
         </span>

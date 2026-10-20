@@ -17,6 +17,7 @@ import {
   getActiveQuestions,
   buildQuestionnaireResponse,
 } from './utils/fhirValidator';
+import { RotateCcw, AlertTriangle } from 'lucide-react';
 import { Header } from './components/Header';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { CompletionScreen } from './components/CompletionScreen';
@@ -56,6 +57,7 @@ export default function App() {
   });
 
   const [isSectionJumpOpen, setIsSectionJumpOpen] = useState(false);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
   // Sound effects generator via Web Audio API
   const playSubtleSound = useCallback(() => {
@@ -209,14 +211,17 @@ export default function App() {
   };
 
   const handleReset = () => {
-    if (window.confirm('Deseja realmente limpar todas as respostas desta anamnese?')) {
-      setAnswers({});
-      setCurrentIndex(-1);
-      setValidationError(null);
-      try {
-        localStorage.removeItem(`anamnese_answers_${currentQuestionnaire.id}`);
-      } catch {}
-    }
+    setIsResetModalOpen(true);
+  };
+
+  const handleConfirmReset = () => {
+    setAnswers({});
+    setCurrentIndex(-1);
+    setValidationError(null);
+    setIsResetModalOpen(false);
+    try {
+      localStorage.removeItem(`anamnese_answers_${currentQuestionnaire.id}`);
+    } catch {}
   };
 
   const handleSelectQuestionnaire = (q: Questionnaire) => {
@@ -265,6 +270,7 @@ export default function App() {
                   <WelcomeScreen
                     questionnaire={currentQuestionnaire}
                     onStart={() => setCurrentIndex(0)}
+                    onLoadSample={handleLoadSample}
                     theme={theme}
                     answeredCount={answeredCount}
                   />
@@ -340,6 +346,7 @@ export default function App() {
               answers={answers}
               onBackToForm={() => setActiveView('form')}
               onGoToInterop={() => setActiveView('settings')}
+              onLoadSample={handleLoadSample}
             />
           </div>
         )}
@@ -382,6 +389,41 @@ export default function App() {
           }}
           onClose={() => setIsSectionJumpOpen(false)}
         />
+      )}
+
+      {/* MODAL: Reset Confirmation Dialog */}
+      {isResetModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
+          <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-[#2A222B]/10 space-y-4">
+            <div className="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center">
+              <RotateCcw className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-[#2A222B]">
+                Limpar Respostas da Anamnese?
+              </h3>
+              <p className="text-sm text-[#2A222B]/70 mt-1 leading-relaxed">
+                Esta ação apagará todos os dados clínicos digitados e reiniciará o formulário para uma nova admissão. Os dados salvos localmente serão limpos.
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsResetModalOpen(false)}
+                className="px-4 py-2.5 rounded-xl border border-[#2A222B]/15 text-sm font-medium text-[#2A222B] hover:bg-slate-50 transition-colors cursor-pointer"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmReset}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium transition-colors shadow-xs cursor-pointer"
+              >
+                Sim, Limpar Anamnese
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
