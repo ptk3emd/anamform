@@ -27,18 +27,13 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="w-7 h-7 rounded-lg bg-[#2A222B] text-white flex items-center justify-center shadow-xs">
             <Stethoscope className="w-3.5 h-3.5 text-emerald-400" />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-sm text-[#2A222B] tracking-tight">
-              AnamneseFlow
-            </span>
-            <span className="text-[10px] font-mono-code bg-[#2A222B]/10 text-[#2A222B]/80 px-1.5 py-0.5 rounded font-medium">
-              FHIR R4
-            </span>
-          </div>
+          <span className="font-bold text-sm text-[#2A222B] tracking-tight">
+            AnamneseFlow
+          </span>
         </div>
 
         {/* Current Category / Step indicator */}
-        <div className="text-xs text-[#2A222B]/60 truncate max-w-[200px] sm:max-w-xs font-medium">
+        <div className="min-w-0 text-xs text-[#2A222B]/60 truncate max-w-[200px] sm:max-w-xs font-medium">
           {currentCategory || currentQuestionnaire.title}
         </div>
 

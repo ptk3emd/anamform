@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Stethoscope, Clock, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Stethoscope, Clock, ArrowRight } from 'lucide-react';
 import { Questionnaire } from '../types/fhir';
 import { ThemeConfig } from '../types/theme';
 
@@ -40,38 +40,28 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
     <div className={`w-full max-w-[760px] flex flex-col ${alignmentClass} px-4 py-12`}>
       {/* Icon Badge */}
       <div
-        className="w-14 h-14 rounded-2xl flex items-center justify-center text-white mb-6 shadow-md"
+        className="w-12 h-12 rounded-xl flex items-center justify-center text-white mb-8 shadow-sm"
         style={{ backgroundColor: theme.brandColor }}
       >
-        <Stethoscope className="w-7 h-7 text-emerald-400" />
+        <Stethoscope className="w-6 h-6 text-emerald-400" />
       </div>
 
       {/* Main Title */}
       <h1
         className={`font-medium tracking-tight text-[#2A222B] mb-4 font-display ${titleSizeClass}`}
       >
-        {questionnaire.title}
+        .anamform
       </h1>
 
       {/* Description */}
-      <p className="text-base md:text-lg text-[#2A222B]/75 mb-6 max-w-xl leading-relaxed">
-        {questionnaire.description ||
-          'Bem-vindo à coleta de anamnese clínica digital. Responda com atenção para garantir a acurácia dos registros assistenciais.'}
+      <p className="w-full text-base md:text-lg text-[#2A222B]/70 mb-8 max-w-xl leading-relaxed">
+        Roteiro de anamnese completa com sequência propedêutica IPPA.
       </p>
 
-      {/* Metadata Indicators (Zero-Pill discipline compliant) */}
-      <div className="flex flex-wrap items-center gap-3 text-xs md:text-sm text-[#2A222B]/60 mb-8 font-medium">
-        <div className="flex items-center gap-1.5">
-          <Clock className="w-4 h-4 text-[#2A222B]/50" />
-          <span>Tempo estimado: 3 a 5 min</span>
-        </div>
-        <span aria-hidden="true">·</span>
-        <div className="flex items-center gap-1.5">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          <span>FHIR R4 &amp; openEHR Compatível</span>
-        </div>
-        <span aria-hidden="true">·</span>
-        <span>LGPD / Sigilo Médico</span>
+      {/* Metadata */}
+      <div className="flex items-center gap-2 text-sm text-[#2A222B]/55 mb-10 font-medium">
+        <Clock className="w-4 h-4 text-[#2A222B]/45" />
+        <span>Tempo estimado: 45 a 60 min</span>
       </div>
 
       {/* Start Button & Quick Actions */}
