@@ -5,6 +5,8 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    // GitHub Pages serves project sites from /<repo>/; the Actions runner sets GITHUB_ACTIONS.
+    base: process.env.GITHUB_ACTIONS ? '/anamform/' : '/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
