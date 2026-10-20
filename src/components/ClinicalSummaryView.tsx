@@ -5,7 +5,7 @@
  */
 
 import React, { useState } from 'react';
-import { Copy, Check, Printer, FileText, AlertTriangle, ArrowLeft, HeartPulse, ShieldAlert } from 'lucide-react';
+import { Copy, Check, Printer, FileText, AlertTriangle, ArrowLeft, HeartPulse, ShieldAlert, Download } from 'lucide-react';
 import { generateClinicalSummary } from '../utils/clinicalSummary';
 
 interface ClinicalSummaryViewProps {
@@ -54,15 +54,32 @@ export const ClinicalSummaryView: React.FC<ClinicalSummaryViewProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={handleCopy}
-            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg border border-[#2A222B]/15 bg-white text-[#2A222B] hover:bg-slate-50 transition-colors shadow-xs"
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg border border-[#2A222B]/15 bg-white text-[#2A222B] hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
           >
             {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
             <span>{copied ? 'Copiado!' : 'Copiar para Prontuário'}</span>
           </button>
 
           <button
+            onClick={() => {
+              const blob = new Blob([summaryText], { type: 'text/plain;charset=utf-8' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `Anamnese_${(answers['anamnese/identificacao/nome_completo'] || 'Paciente').replace(/\s+/g, '_')}_${Date.now()}.txt`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg border border-[#2A222B]/15 bg-white text-[#2A222B] hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
+            title="Baixar nota em arquivo texto"
+          >
+            <Download className="w-4 h-4" />
+            <span>Baixar (.txt)</span>
+          </button>
+
+          <button
             onClick={handlePrint}
-            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg border border-[#2A222B]/15 bg-white text-[#2A222B] hover:bg-slate-50 transition-colors shadow-xs"
+            className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg border border-[#2A222B]/15 bg-white text-[#2A222B] hover:bg-slate-50 transition-colors shadow-xs cursor-pointer"
           >
             <Printer className="w-4 h-4" />
             <span>Imprimir</span>
