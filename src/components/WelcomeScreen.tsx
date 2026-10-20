@@ -59,7 +59,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
       </p>
 
       {/* Metadata */}
-      <div className="flex items-center gap-2 text-sm text-[#2A222B]/55 mb-10 font-medium">
+      <div className="flex items-center gap-2 text-sm text-[#2A222B]/65 mb-10 font-medium">
         <Clock className="w-4 h-4 text-[#2A222B]/45" />
         <span>Tempo estimado: 45 a 60 min</span>
       </div>
@@ -70,7 +70,7 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           type="button"
           data-testid="start-anamnese-btn"
           onClick={onStart}
-          className="flex items-center gap-3 px-8 py-3.5 rounded-xl text-white font-medium text-lg shadow-sm hover:opacity-95 active:scale-98 transition-all cursor-pointer"
+          className="flex items-center gap-3 px-8 py-3.5 rounded-xl text-white font-medium text-lg shadow-sm hover:opacity-90 active:scale-[0.98] transition-[transform,opacity] duration-150 cursor-pointer"
           style={{ backgroundColor: theme.brandColor }}
         >
           <span>{answeredCount > 0 ? 'Continuar Anamnese' : 'Iniciar Anamnese'}</span>
@@ -81,14 +81,14 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
           <button
             type="button"
             onClick={onLoadSample}
-            className="flex items-center gap-2 px-5 py-3.5 rounded-xl bg-white border border-[#2A222B]/15 text-[#2A222B] hover:bg-slate-50 font-medium text-sm transition-all shadow-xs cursor-pointer"
+            className="flex items-center gap-2 px-5 py-3.5 min-h-11 rounded-xl bg-white border border-[#2A222B]/15 text-[#2A222B] hover:bg-slate-50 font-medium text-sm transition-all shadow-xs cursor-pointer"
             title="Carregar caso pré-preenchido de 144 itens para teste rápido"
           >
             <span>Carregar Caso Clínico (SCA)</span>
           </button>
         )}
 
-        <span className="text-xs text-[#2A222B]/50 font-medium hidden sm:inline">
+        <span className="text-xs text-[#2A222B]/65 font-medium hidden sm:inline">
           pressione <strong className="font-semibold text-[#2A222B]/70">Enter ↵</strong>
         </span>
       </div>

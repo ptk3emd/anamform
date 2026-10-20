@@ -29,11 +29,61 @@
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(42, 34, 43, 0.3);
 }
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(42, 34, 43, 0.25) transparent;
+}
 
 /* Focus outline refinement */
 *:focus-visible {
-  outline: 2px solid #006BFF;
+  outline: 2px solid #2a222b;
   outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Text inputs signal focus with the bottom rule, not a ring */
+input:focus-visible,
+textarea:focus-visible {
+  outline: none;
+}
+
+html {
+  color-scheme: light;
+  accent-color: #198754;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+input, textarea {
+  caret-color: #198754;
+}
+
+.font-mono-code {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (hover: none) {
+  button { -webkit-touch-callout: none; }
 }
 
 /* Print optimizations for clinical PEP export */

@@ -54,7 +54,7 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1 text-[#2A222B]/50 hover:text-[#2A222B] rounded-lg transition-colors"
+            className="p-1 text-[#2A222B]/65 hover:text-[#2A222B] rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -111,7 +111,7 @@ export const ThemeSettings: React.FC<ThemeSettingsProps> = ({
                       fontFamily: e.target.value as any,
                     })
                   }
-                  className="w-full px-3 py-2.5 rounded-lg border border-[#2A222B]/20 bg-white text-[#2A222B] focus:border-[#006BFF] focus:outline-none"
+                  className="w-full px-3 py-2.5 rounded-lg border border-[#2A222B]/20 bg-white text-[#2A222B] focus:border-[#2A222B] focus:outline-none"
                 >
                   <option value="serif">Tobias / Lora / Georgia (Design.md Serifada Médica)</option>
                   <option value="sans">Geist / Plus Jakarta / Inter (Sans-Serif Moderna)</option>

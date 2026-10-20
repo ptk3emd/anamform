@@ -42,12 +42,12 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
       {/* Stats */}
       <div className="flex items-center gap-4 p-4 rounded-xl bg-white border border-[#2A222B]/10 shadow-xs mb-8 w-full max-w-md text-sm">
         <div>
-          <span className="text-[#2A222B]/50 block text-xs">Total de campos preenchidos</span>
+          <span className="text-[#2A222B]/65 block text-xs">Total de campos preenchidos</span>
           <span className="text-lg font-bold text-[#2A222B]">{totalAnswered} itens clínicos</span>
         </div>
         <div className="w-[1px] h-8 bg-[#2A222B]/10" />
         <div>
-          <span className="text-[#2A222B]/50 block text-xs">Status da interoperabilidade</span>
+          <span className="text-[#2A222B]/65 block text-xs">Status da interoperabilidade</span>
           <span className="text-emerald-700 font-semibold text-sm flex items-center gap-1">
             Pronto para EHRbase / PEP
           </span>

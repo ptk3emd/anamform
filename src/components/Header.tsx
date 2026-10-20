@@ -38,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Subtle percentage */}
-        <div className="text-xs font-mono-code text-[#2A222B]/50">
+        <div className="text-xs font-mono-code text-[#2A222B]/65">
           {progressPercent}%
         </div>
       </div>

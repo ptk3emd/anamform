@@ -327,7 +327,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                   fontFamily: e.target.value as any,
                 })
               }
-              className="w-full px-3 py-2.5 rounded-lg border border-[#2A222B]/20 bg-white text-[#2A222B] focus:border-[#006BFF] focus:outline-none"
+              className="w-full px-3 py-2.5 rounded-lg border border-[#2A222B]/20 bg-white text-[#2A222B] focus:border-[#2A222B] focus:outline-none"
             >
               <option value="serif">Tobias / Lora / Georgia (Design.md Serifada Médica)</option>
               <option value="sans">Geist / Plus Jakarta / Inter (Sans-Serif Contemporânea)</option>

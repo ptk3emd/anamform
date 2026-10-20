@@ -89,7 +89,7 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 text-[#2A222B]/50 hover:text-[#2A222B] rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-[#2A222B]/65 hover:text-[#2A222B] rounded-lg transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -97,13 +97,13 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
 
           {/* Search Input */}
           <div className="relative">
-            <Search className="w-4 h-4 text-[#2A222B]/40 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-[#2A222B]/55 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar item semiológico (ex: Glasgow, Murphy, Dor)..."
-              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-[#2A222B]/15 rounded-xl text-xs text-[#2A222B] focus:border-[#006BFF] focus:outline-none transition-colors"
+              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-[#2A222B]/15 rounded-xl text-xs text-[#2A222B] focus:border-[#2A222B] focus:outline-none transition-colors"
             />
           </div>
 
@@ -148,13 +148,13 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
         {/* Section List */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {Object.keys(groups).length === 0 ? (
-            <div className="text-center py-12 text-[#2A222B]/50 text-xs">
+            <div className="text-center py-12 text-[#2A222B]/65 text-xs">
               Nenhum item semiológico encontrado para a busca &quot;{searchTerm}&quot;.
             </div>
           ) : (
             Object.entries(groups).map(([category, items]) => (
               <div key={category} className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#2A222B]/50 px-1">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#2A222B]/65 px-1">
                   {category}
                 </h4>
                 <div className="space-y-1">
@@ -185,7 +185,7 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
                           ) : (
                             <Circle
                               className={`w-4 h-4 shrink-0 ${
-                                isCurrent ? 'text-white/40' : 'text-[#2A222B]/30'
+                                isCurrent ? 'text-white/65' : 'text-[#2A222B]/50'
                               }`}
                             />
                           )}

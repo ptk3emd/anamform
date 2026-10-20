@@ -7,7 +7,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Check, Mic, MicOff, AlertCircle, Sparkles } from 'lucide-react';
+import { Check, Mic, MicOff, AlertCircle, ListChecks } from 'lucide-react';
 import { QuestionnaireItem } from '../types/fhir';
 import { ThemeConfig } from '../types/theme';
 
@@ -232,10 +232,10 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
     <div className={`w-full max-w-[760px] flex flex-col ${alignmentClass} px-4 py-6 md:py-8`}>
       {/* Category Kicker */}
       {item.category && (
-        <div className="flex items-center gap-2 mb-2 text-xs font-semibold tracking-wider uppercase text-[#2A222B]/60">
+        <div className="flex items-center gap-2 mb-2 text-sm font-medium text-[#2A222B]/65">
           <span>{item.category}</span>
           {item.required && (
-            <span className="text-amber-600 font-medium lowercase">· obrigatório</span>
+            <span className="text-amber-800 font-medium">· obrigatório</span>
           )}
         </div>
       )}
@@ -246,7 +246,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
           className="shrink-0 text-sm md:text-base font-mono-code font-semibold px-2 py-0.5 rounded text-white"
           style={{ backgroundColor: theme.brandColor }}
         >
-          {item.prefix ? item.prefix : questionIndex + 1} &rarr;
+          {item.prefix ? item.prefix : questionIndex + 1}<span aria-hidden="true"> &rarr;</span>
         </span>
         <h2
           className={`font-normal text-[#2A222B] tracking-tight w-full ${titleSizeClass} ${fontFamilyClass}`}
@@ -267,7 +267,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
         {/* SPECIAL: EVA PAIN SCALE (0 - 10) */}
         {isEvaScale && (
           <div className="w-full max-w-lg space-y-4 p-4 rounded-2xl bg-white border border-[#2A222B]/10 shadow-xs">
-            <div className="flex items-center justify-between text-xs font-semibold text-[#2A222B]/60 uppercase">
+            <div className="flex items-center justify-between text-xs font-semibold text-[#2A222B]/65">
               <span>0 (Sem dor)</span>
               <span className="text-sm font-bold font-mono-code text-[#2A222B] bg-[#2A222B]/10 px-2 py-0.5 rounded">
                 EVA: {value !== undefined ? `${value} / 10` : 'Selecione'}
@@ -284,11 +284,13 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
                   <button
                     key={score}
                     type="button"
+                    aria-pressed={isSelected}
+                    aria-label={`Dor ${score} de 10`}
                     onClick={() => {
                       onChange(score);
                       if (theme.autoAdvanceOnSingleChoice) setTimeout(onNext, 250);
                     }}
-                    className={`py-3 rounded-lg font-mono-code text-sm font-semibold transition-all cursor-pointer ${
+                    className={`min-h-11 py-3 rounded-lg font-mono-code text-sm font-semibold transition-[transform,background-color,box-shadow] duration-200 cursor-pointer ${
                       isSelected
                         ? isHigh
                           ? 'bg-rose-600 text-white shadow-md scale-105'
@@ -316,7 +318,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
                 value={value || ''}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={item.placeholder || 'Digite sua resposta aqui...'}
-                className="w-full text-base md:text-xl p-3 bg-transparent border-b-2 border-[#2A222B]/20 text-[#2A222B] placeholder:text-[#2A222B]/35 focus:border-[#006BFF] focus:outline-none transition-colors resize-none rounded-t-lg bg-[#2A222B]/[0.02]"
+                className="w-full text-base md:text-xl p-3 pr-14 bg-transparent border-b-2 border-[#2A222B]/20 text-[#2A222B] placeholder:text-[#2A222B]/35 focus:border-[#2A222B] focus:outline-none transition-colors resize-none rounded-t-lg bg-[#2A222B]/[0.02]"
               />
             ) : (
               <input
@@ -325,7 +327,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
                 value={value || ''}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={item.placeholder || 'Digite sua resposta aqui...'}
-                className="w-full text-lg md:text-2xl py-3 px-1 bg-transparent border-b-2 border-[#2A222B]/25 text-[#2A222B] placeholder:text-[#2A222B]/35 focus:border-[#006BFF] focus:outline-none transition-colors"
+                className="w-full text-lg md:text-2xl py-3 pl-1 pr-14 bg-transparent border-b-2 border-[#2A222B]/25 text-[#2A222B] placeholder:text-[#2A222B]/35 focus:border-[#2A222B] focus:outline-none transition-colors"
               />
             )}
 
@@ -333,8 +335,10 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
             <button
               type="button"
               onClick={toggleSpeechRecognition}
-              title="Ditar por voz (Web Speech API)"
-              className={`absolute right-2 bottom-3 p-2 rounded-full border transition-all cursor-pointer ${
+              title="Ditar por voz"
+              aria-label={isRecording ? 'Parar ditado por voz' : 'Ditar por voz'}
+              aria-pressed={isRecording}
+              className={`absolute right-1 bottom-1 size-11 flex items-center justify-center rounded-full border transition-all cursor-pointer ${
                 isRecording
                   ? 'bg-rose-500 text-white border-rose-600 animate-pulse'
                   : 'bg-white text-[#2A222B]/60 border-[#2A222B]/15 hover:text-[#2A222B] shadow-2xs'
@@ -343,8 +347,8 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
               {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
             </button>
             {speechNotice && (
-              <div className="text-xs text-[#006BFF] mt-1.5 flex items-center gap-1.5 font-medium">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#006BFF] animate-pulse" />
+              <div role="status" className="text-xs text-[#2A222B]/80 mt-1.5 flex items-center gap-1.5 font-medium">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#198754] animate-pulse" />
                 <span>{speechNotice}</span>
               </div>
             )}
@@ -361,7 +365,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
               value={value !== undefined ? value : ''}
               onChange={(e) => onChange(e.target.value)}
               placeholder="0"
-              className="w-48 text-2xl md:text-4xl py-2 px-1 bg-transparent border-b-2 border-[#2A222B]/25 text-[#2A222B] placeholder:text-[#2A222B]/30 focus:border-[#006BFF] focus:outline-none transition-colors font-mono-code"
+              className="w-48 text-2xl md:text-4xl py-2 px-1 bg-transparent border-b-2 border-[#2A222B]/25 text-[#2A222B] placeholder:text-[#2A222B]/30 focus:border-[#2A222B] focus:outline-none transition-colors font-mono-code"
             />
             {item.unit && (
               <span className="text-base md:text-xl text-[#2A222B]/60 font-medium">
@@ -379,7 +383,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
               type="date"
               value={value || ''}
               onChange={(e) => onChange(e.target.value)}
-              className="text-lg md:text-2xl py-2.5 px-3 rounded-lg border-2 border-[#2A222B]/20 bg-white text-[#2A222B] focus:border-[#006BFF] focus:outline-none transition-colors font-sans cursor-pointer shadow-xs"
+              className="text-lg md:text-2xl py-2.5 px-3 rounded-lg border-2 border-[#2A222B]/20 bg-white text-[#2A222B] focus:border-[#2A222B] focus:outline-none transition-colors font-sans cursor-pointer shadow-xs"
             />
           </div>
         )}
@@ -389,11 +393,12 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-md">
             <button
               type="button"
+              aria-pressed={value === true}
               onClick={() => {
                 onChange(true);
                 if (theme.autoAdvanceOnSingleChoice) setTimeout(onNext, 250);
               }}
-              className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all font-medium text-base md:text-lg text-left cursor-pointer ${
+              className={`flex items-center justify-between p-4 rounded-xl border-2 transition-[background-color,border-color,color,box-shadow] duration-200 font-medium text-base md:text-lg text-left cursor-pointer active:scale-[0.99] ${
                 value === true
                   ? 'border-[#2A222B] bg-[#2A222B] text-white shadow-md'
                   : 'border-[#2A222B]/15 bg-white text-[#2A222B] hover:border-[#2A222B]/40 hover:bg-[#2A222B]/[0.02]'
@@ -416,11 +421,12 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
 
             <button
               type="button"
+              aria-pressed={value === false}
               onClick={() => {
                 onChange(false);
                 if (theme.autoAdvanceOnSingleChoice) setTimeout(onNext, 250);
               }}
-              className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all font-medium text-base md:text-lg text-left cursor-pointer ${
+              className={`flex items-center justify-between p-4 rounded-xl border-2 transition-[background-color,border-color,color,box-shadow] duration-200 font-medium text-base md:text-lg text-left cursor-pointer active:scale-[0.99] ${
                 value === false
                   ? 'border-[#2A222B] bg-[#2A222B] text-white shadow-md'
                   : 'border-[#2A222B]/15 bg-white text-[#2A222B] hover:border-[#2A222B]/40 hover:bg-[#2A222B]/[0.02]'
@@ -464,8 +470,9 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
                 <button
                   key={optVal}
                   type="button"
+                  aria-pressed={isSelected}
                   onClick={() => handleChoiceSelect(optVal)}
-                  className={`w-full flex items-center justify-between p-3.5 md:p-4 rounded-xl border-2 transition-all text-left group cursor-pointer ${
+                  className={`w-full flex items-center justify-between p-3.5 md:p-4 rounded-xl border-2 transition-[background-color,border-color,color,box-shadow] duration-200 text-left group cursor-pointer active:scale-[0.99] ${
                     isSelected
                       ? 'border-[#2A222B] bg-[#2A222B] text-white shadow-sm'
                       : 'border-[#2A222B]/15 bg-white text-[#2A222B] hover:border-[#2A222B]/40 hover:bg-[#2A222B]/[0.02]'
@@ -496,7 +503,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
         {quickChips.length > 0 && (
           <div className="mt-4 pt-2 border-t border-[#2A222B]/10">
             <div className="flex items-center gap-1.5 text-xs text-[#2A222B]/60 mb-2">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <ListChecks className="w-3.5 h-3.5 text-[#2A222B]/65" aria-hidden="true" />
               <span>Valores frequentes (toque rápido para preencher):</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -510,7 +517,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
                       setTimeout(onNext, 250);
                     }
                   }}
-                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-mono-code text-[#2A222B] transition-colors border border-slate-200 shadow-2xs cursor-pointer"
+                  className="min-h-9 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-mono-code text-[#2A222B] transition-colors border border-slate-200 shadow-2xs cursor-pointer"
                 >
                   {chip}
                 </button>
@@ -527,6 +534,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
+            role="alert"
             className="flex items-center gap-2 text-rose-600 text-sm font-medium mt-2 bg-rose-50 px-3 py-2 rounded-lg border border-rose-200"
           >
             <AlertCircle className="w-4 h-4 shrink-0" />
@@ -540,13 +548,13 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
         <button
           type="button"
           onClick={onNext}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-white font-medium text-base shadow-sm transition-transform active:scale-95 hover:opacity-95 cursor-pointer"
+          className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-white font-medium text-base min-h-11 shadow-sm transition-[transform,opacity] duration-150 active:scale-95 hover:opacity-90 cursor-pointer"
           style={{ backgroundColor: theme.brandColor }}
         >
           <span>OK</span>
-          <Check className="w-4 h-4 stroke-[3]" />
+          <Check className="w-4 h-4 stroke-[3]" aria-hidden="true" />
         </button>
-        <span className="text-xs text-[#2A222B]/50 font-medium hidden sm:inline">
+        <span className="text-xs text-[#2A222B]/65 font-medium hidden sm:inline">
           pressione <strong className="font-semibold text-[#2A222B]/70">Enter ↵</strong>
         </span>
       </div>
