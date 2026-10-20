@@ -210,7 +210,7 @@ export const ClinicalSummaryView: React.FC<ClinicalSummaryViewProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold tracking-wider uppercase text-[#2A222B]/50">
+              <span className="text-xs font-semibold tracking-wider uppercase text-[#2A222B]/65">
                 Prontuário Médico Digital
               </span>
               <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${triage.color}`}>
@@ -244,10 +244,10 @@ export const ClinicalSummaryView: React.FC<ClinicalSummaryViewProps> = ({
         {viewMode === 'text' && (
           <div className="mt-4 pt-4 border-t border-[#2A222B]/10">
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-[#2A222B]/50">
+              <label className="text-xs font-semibold uppercase tracking-wider text-[#2A222B]/65">
                 Evolução Clínica Formatada (Padrão CFM / Prontuário Eletrônico)
               </label>
-              <span className="text-[11px] text-[#2A222B]/50 font-mono-code">
+              <span className="text-[11px] text-[#2A222B]/65 font-mono-code">
                 Pronto para colar em Tasy, MV Soul, AGHU, Epic, Cerner
               </span>
             </div>

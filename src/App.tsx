@@ -241,7 +241,7 @@ export default function App() {
 
   return (
     <div
-      className="min-h-screen flex flex-col transition-colors selection:bg-[#2A222B] selection:text-white"
+      className="min-h-dvh flex flex-col transition-colors selection:bg-[#2A222B] selection:text-white"
       style={{ backgroundColor: theme.bgColor }}
     >
       {/* Clean Minimal Top Header */}
@@ -252,7 +252,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col justify-center items-center relative overflow-x-hidden">
+      <main id="conteudo" className="flex-1 flex flex-col justify-center items-center relative overflow-x-hidden">
         {/* VIEW 1: TYPEFORM FORM COLLECTOR */}
         {activeView === 'form' && (
           <div className="w-full flex-1 flex flex-col justify-center items-center pb-24">
@@ -264,7 +264,7 @@ export default function App() {
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.28, ease: 'easeOut' }}
+                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                   className="w-full flex justify-center"
                 >
                   <WelcomeScreen
@@ -284,7 +284,7 @@ export default function App() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
                   className="w-full flex justify-center"
                 >
                   <TypeformQuestionCard
@@ -310,7 +310,7 @@ export default function App() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
+                  transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                   className="w-full flex justify-center"
                 >
                   <CompletionScreen
@@ -394,12 +394,12 @@ export default function App() {
       {/* MODAL: Reset Confirmation Dialog */}
       {isResetModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-[#2A222B]/10 space-y-4">
+          <div role="alertdialog" aria-modal="true" aria-labelledby="reset-title" className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-[#2A222B]/10 space-y-4">
             <div className="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center">
               <RotateCcw className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-[#2A222B]">
+              <h3 id="reset-title" className="text-lg font-bold text-[#2A222B]">
                 Limpar Respostas da Anamnese?
               </h3>
               <p className="text-sm text-[#2A222B]/70 mt-1 leading-relaxed">

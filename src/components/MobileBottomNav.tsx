@@ -30,22 +30,23 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   totalQuestions,
 }) => {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#2A222B]/10 shadow-lg px-2 sm:px-6 py-1.5 transition-colors">
+    <nav aria-label="Seções do app" className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#2A222B]/10 shadow-[0_-4px_16px_rgba(42,34,43,0.06)] pb-[max(0.375rem,env(safe-area-inset-bottom))] px-2 sm:px-6 py-1.5 transition-colors">
       <div className="max-w-md mx-auto flex items-center justify-around">
         {/* TAB 1: COLETA (TYPEFORM) */}
         <button
           type="button"
           onClick={() => onChangeView('form')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+          aria-current={activeView === 'form' ? 'page' : undefined}
+          className={`flex flex-col items-center justify-center min-h-11 py-1 px-3 rounded-xl transition-all cursor-pointer ${
             activeView === 'form'
               ? 'text-[#2A222B] font-semibold'
-              : 'text-[#2A222B]/50 hover:text-[#2A222B]/80'
+              : 'text-[#2A222B]/65 hover:text-[#2A222B]/80'
           }`}
         >
           <div className="relative">
             <Stethoscope className={`w-5 h-5 ${activeView === 'form' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
             {answeredCount > 0 && activeView !== 'form' && (
-              <span className="absolute -top-1 -right-1.5 w-2 h-2 rounded-full bg-emerald-500" />
+              <span aria-hidden="true" className="absolute -top-1 -right-1.5 w-2 h-2 rounded-full bg-[#198754]" />
             )}
           </div>
           <span className="text-[11px] mt-0.5 tracking-tight">Coleta</span>
@@ -55,7 +56,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         <button
           type="button"
           onClick={onOpenSectionIndex}
-          className="flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all text-[#2A222B]/50 hover:text-[#2A222B]/80 cursor-pointer"
+          className="flex flex-col items-center justify-center min-h-11 py-1 px-3 rounded-xl transition-all text-[#2A222B]/65 hover:text-[#2A222B]/80 cursor-pointer"
           title="Ver as 29 seções e 144 itens semiológicos"
         >
           <ListOrdered className="w-5 h-5 stroke-[1.8]" />
@@ -68,10 +69,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         <button
           type="button"
           onClick={() => onChangeView('summary')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+          aria-current={activeView === 'summary' ? 'page' : undefined}
+          className={`flex flex-col items-center justify-center min-h-11 py-1 px-3 rounded-xl transition-all cursor-pointer ${
             activeView === 'summary'
               ? 'text-[#2A222B] font-semibold'
-              : 'text-[#2A222B]/50 hover:text-[#2A222B]/80'
+              : 'text-[#2A222B]/65 hover:text-[#2A222B]/80'
           }`}
         >
           <FileText className={`w-5 h-5 ${activeView === 'summary' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
@@ -82,10 +84,11 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         <button
           type="button"
           onClick={() => onChangeView('settings')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+          aria-current={activeView === 'settings' ? 'page' : undefined}
+          className={`flex flex-col items-center justify-center min-h-11 py-1 px-3 rounded-xl transition-all cursor-pointer ${
             activeView === 'settings'
               ? 'text-[#2A222B] font-semibold'
-              : 'text-[#2A222B]/50 hover:text-[#2A222B]/80'
+              : 'text-[#2A222B]/65 hover:text-[#2A222B]/80'
           }`}
         >
           <SettingsIcon className={`w-5 h-5 ${activeView === 'settings' ? 'stroke-[2.5]' : 'stroke-[1.8]'}`} />
