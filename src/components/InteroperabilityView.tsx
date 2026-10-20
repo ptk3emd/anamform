@@ -150,7 +150,7 @@ export const InteroperabilityView: React.FC<InteroperabilityViewProps> = ({
               Interoperabilidade Semântica em Saúde: FHIR R4 &harr; openEHR (CISTEC)
             </h3>
             <p className="text-sm text-[#2A222B]/70 leading-relaxed">
-              O AnamneseFlow utiliza a especificação CISTEC para transformar cada pergunta do questionário em um caminho <strong>FLAT openEHR</strong> no <code>linkId</code>. Isso possibilita que os dados preenchidos no formulário Typeform sejam imediatamente exportados como um recurso padrão <strong>FHIR QuestionnaireResponse</strong> e convertidos em composições nativas para <strong>EHRbase</strong>, <strong>OpenEMR</strong> e <strong>Bahmni</strong>.
+              O .anamform utiliza a especificação CISTEC para transformar cada pergunta do questionário em um caminho <strong>FLAT openEHR</strong> no <code>linkId</code>. Isso possibilita que os dados preenchidos no formulário Typeform sejam imediatamente exportados como um recurso padrão <strong>FHIR QuestionnaireResponse</strong> e convertidos em composições nativas para <strong>EHRbase</strong>, <strong>OpenEMR</strong> e <strong>Bahmni</strong>.
             </p>
           </div>
         </div>

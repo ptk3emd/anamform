@@ -21,7 +21,7 @@ export function convertFhirToOpenEHRFlat(qr: QuestionnaireResponse): OpenEHRFlat
   flat['anamnese_geral/context/setting|code'] = '238';
   flat['anamnese_geral/context/setting|value'] = 'hospital care';
   flat['anamnese_geral/context/setting|terminology'] = 'openehr';
-  flat['anamnese_geral/composer|name'] = qr.author?.display || 'AnamneseFlow Interop';
+  flat['anamnese_geral/composer|name'] = qr.author?.display || '.anamform Interop';
 
   if (!qr.item) {
     return flat;

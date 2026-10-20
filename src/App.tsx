@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * AnamneseFlow - Mobile-First Typeform Medical Anamnesis with FHIR R4 & openEHR Interoperability
+ * .anamform - Mobile-First Typeform Medical Anamnesis with FHIR R4 & openEHR Interoperability
  * 144 Semiological Items based on Porto (8ª ed.), Bates (12ª ed.) and Rocco (2ª ed.)
  */
 

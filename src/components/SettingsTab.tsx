@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * Settings & Configuration Hub for AnamneseFlow
+ * Settings & Configuration Hub for .anamform
  * Consolidates Theme, Presets, Templates, Interop and System Reset
  */
 

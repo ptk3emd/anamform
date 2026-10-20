@@ -1,4 +1,4 @@
-# AnamneseFlow — Documentação Técnica e Clínica
+# .anamform — Documentação Técnica e Clínica
 
 **Versão:** 2.0.0  
 **Padrões:** HL7 FHIR R4 · openEHR EHRbase (CISTEC) · Typeform Design System (Echo)  
@@ -8,7 +8,7 @@
 
 ## 1. Visão Geral e Propósito
 
-O **AnamneseFlow** é uma aplicação web médica *mobile-first* projetada para transformar a coleta de anamnese clínica e exame físico em uma experiência conversacional fluida, sem atrito, com foco estrito em **uma pergunta por vez** (paradigma Typeform).
+O **.anamform** é uma aplicação web médica *mobile-first* projetada para transformar a coleta de anamnese clínica e exame físico em uma experiência conversacional fluida, sem atrito, com foco estrito em **uma pergunta por vez** (paradigma Typeform).
 
 Ao mesmo tempo em que oferece uma interface limpa, rápida e acessível para o paciente e para o médico examinador, o sistema garante conformidade rigorosa com os mais elevados padrões globais de interoperabilidade em saúde:
 - **HL7 FHIR R4 (`Questionnaire` e `QuestionnaireResponse`)**: Estrutura universal de perguntas e respostas em saúde digital.

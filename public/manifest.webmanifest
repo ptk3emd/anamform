@@ -1,6 +1,6 @@
 {
-  "name": "AnamneseFlow",
-  "short_name": "AnamneseFlow",
+  "name": ".anamform",
+  "short_name": ".anamform",
   "description": "Roteiro de anamnese completa com sequência propedêutica IPPA.",
   "lang": "pt-BR",
   "start_url": "./",

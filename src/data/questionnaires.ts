@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * Comprehensive FHIR R4 Medical Questionnaires for AnamneseFlow
+ * Comprehensive FHIR R4 Medical Questionnaires for .anamform
  * Incorporating CISTEC openEHR FLAT linkIds and full medical anamnesis & physical examination (144 items)
  * Base: Manuais de Semiologia Médica - Porto (8ª ed.), Bates (12ª ed.), Rocco (2ª ed.)
  */
@@ -16,7 +16,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
   title: 'Anamnese e Exame Físico Completo (Adulto) — Porto, Bates & Rocco',
   status: 'active',
   date: '2026-10-20',
-  publisher: 'AnamneseFlow / Semiologia Médica Integrada',
+  publisher: '.anamform / Semiologia Médica Integrada',
   description: 'Roteiro exaustivo de 144 itens integrando anamnese e exame físico completo com sequência propedêutica IPPA.',
   purpose: 'Padronização do registro clínico para admissão hospitalar, ambulatório e emergência compatível com FHIR R4 e openEHR EHRbase.',
   subjectType: ['Patient'],
@@ -1388,7 +1388,7 @@ export const OUTPATIENT_QUESTIONNAIRE: Questionnaire = {
   title: 'Anamnese Ambulatorial (Consulta Rápida)',
   status: 'active',
   date: '2026-10-20',
-  publisher: 'AnamneseFlow / Ambulatório Integrado',
+  publisher: '.anamform / Ambulatório Integrado',
   description: 'Anamnese ágil e objetiva para consultório, clínica e medicina de família.',
   subjectType: ['Patient'],
   item: [
@@ -1462,7 +1462,7 @@ export const CARDIOLOGY_QUESTIONNAIRE: Questionnaire = {
   title: 'Protocolo de Dor Torácica & Cardiologia de Emergência',
   status: 'active',
   date: '2026-10-20',
-  publisher: 'AnamneseFlow / Cardiologia & Pronto-Socorro',
+  publisher: '.anamform / Cardiologia & Pronto-Socorro',
   description: 'Anamnese focada para estratificação de risco cardíaco (TIMI, HEART) e suspeita de SCA.',
   subjectType: ['Patient'],
   item: [

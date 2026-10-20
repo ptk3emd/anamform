@@ -1,4 +1,4 @@
-# AnamneseFlow — Documentação Técnica e Clínica
+# .anamform — Documentação Técnica e Clínica
 
 Consulte o arquivo [Claude.md](./Claude.md) para a documentação técnica e clínica completa, incluindo:
 - Arquitetura Mobile-First e Design System Typeform (`DESIGN.md` Echo Variant).
