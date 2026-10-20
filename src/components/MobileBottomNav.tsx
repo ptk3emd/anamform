@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * Mobile-First Bottom Bar Navigation for AnamneseFlow
+ * Mobile-First Bottom Bar Navigation for .anamform
  */
 
 import React from 'react';

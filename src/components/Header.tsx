@@ -1,7 +1,7 @@
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
- * Minimalist Clean Header for AnamneseFlow (Distraction-Free)
+ * Minimalist Clean Header for .anamform (Distraction-Free)
  */
 
 import React from 'react';
@@ -28,7 +28,7 @@ export const Header: React.FC<HeaderProps> = ({
             <Stethoscope className="w-3.5 h-3.5 text-emerald-400" />
           </div>
           <span className="font-bold text-sm text-[#2A222B] tracking-tight">
-            AnamneseFlow
+            .anamform
           </span>
         </div>
 

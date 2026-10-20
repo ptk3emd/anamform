@@ -195,7 +195,7 @@ export function buildQuestionnaireResponse(
     },
     author: {
       reference: 'Practitioner/dra-clinica',
-      display: 'AnamneseFlow Assistente Clínico',
+      display: '.anamform Assistente Clínico',
     },
     item: responseItems,
   };
