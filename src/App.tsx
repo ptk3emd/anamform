@@ -50,7 +50,8 @@ export default function App() {
   const [theme, setTheme] = useState<ThemeConfig>(() => {
     try {
       const saved = localStorage.getItem('anamnese_theme');
-      return saved ? JSON.parse(saved) : DEFAULT_THEME;
+      const parsed = saved ? JSON.parse(saved) : null;
+      return parsed && typeof parsed === 'object' ? { ...DEFAULT_THEME, ...parsed } : DEFAULT_THEME;
     } catch {
       return DEFAULT_THEME;
     }
@@ -203,6 +204,27 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, [currentIndex, isSectionJumpOpen, activeView, activeQuestions.length]);
 
+  // Start at the first unanswered question when resuming a saved session
+  const handleStart = () => {
+    const firstPending = activeQuestions.findIndex((q) => {
+      const v = answers[q.linkId];
+      return v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0);
+    });
+    if (answeredCount === 0) setCurrentIndex(0);
+    else setCurrentIndex(firstPending === -1 ? activeQuestions.length : firstPending);
+    playSubtleSound();
+  };
+
+  // Escape dismisses the reset confirmation
+  useEffect(() => {
+    if (!isResetModalOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsResetModalOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isResetModalOpen]);
+
   const handleLoadSample = () => {
     setAnswers(SAMPLE_PATIENT_CASE);
     setCurrentQuestionnaire(HOSPITAL_ADMISSION_QUESTIONNAIRE);
@@ -255,7 +277,7 @@ export default function App() {
       <main id="conteudo" className="flex-1 flex flex-col justify-center items-center relative overflow-x-hidden">
         {/* VIEW 1: TYPEFORM FORM COLLECTOR */}
         {activeView === 'form' && (
-          <div className="w-full flex-1 flex flex-col justify-center items-center pb-24">
+          <div className="w-full flex-1 flex flex-col justify-center items-center pb-36 md:pb-28">
             <AnimatePresence mode="wait">
               {/* WELCOME SCREEN */}
               {currentIndex === -1 && (
@@ -269,7 +291,7 @@ export default function App() {
                 >
                   <WelcomeScreen
                     questionnaire={currentQuestionnaire}
-                    onStart={() => setCurrentIndex(0)}
+                    onStart={handleStart}
                     onLoadSample={handleLoadSample}
                     theme={theme}
                     answeredCount={answeredCount}
