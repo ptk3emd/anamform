@@ -60,7 +60,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           title="Ver as 29 seções e 144 itens semiológicos"
         >
           <ListOrdered className="w-5 h-5 stroke-[1.8]" />
-          <span className="text-[11px] mt-0.5 tracking-tight">
+          <span className="text-[11px] mt-0.5 tracking-tight whitespace-nowrap">
             Índice ({answeredCount}/{totalQuestions})
           </span>
         </button>

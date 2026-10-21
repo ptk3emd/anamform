@@ -4,7 +4,7 @@
  * Section Jump & Outline Drawer with Real-Time Search & Status Filters
  */
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { X, CheckCircle2, Circle, ArrowRight, Search } from 'lucide-react';
 import { QuestionnaireItem } from '../types/fhir';
 
@@ -25,6 +25,20 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMode, setFilterMode] = useState<'all' | 'pending' | 'completed'>('all');
+
+  // Escape closes the drawer; page scroll stays put while it is open
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [onClose]);
 
   // Filter questions based on search and status
   const filteredQuestions = useMemo(() => {
@@ -74,8 +88,8 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
   }, [questions, answers]);
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs">
-      <div className="w-full max-w-md bg-white h-full shadow-2xl flex flex-col border-l border-[#2A222B]/10 animate-in slide-in-from-right duration-200">
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div role="dialog" aria-modal="true" aria-label="Índice da anamnese" className="w-full max-w-md bg-white h-dvh shadow-2xl flex flex-col border-l border-[#2A222B]/10 animate-in slide-in-from-right duration-200">
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#2A222B]/10 space-y-3">
           <div className="flex items-center justify-between">
@@ -88,8 +102,10 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
               </p>
             </div>
             <button
+              type="button"
               onClick={onClose}
-              className="p-1.5 text-[#2A222B]/65 hover:text-[#2A222B] rounded-lg transition-colors cursor-pointer"
+              aria-label="Fechar índice"
+              className="size-11 -mr-2 flex items-center justify-center text-[#2A222B]/65 hover:text-[#2A222B] rounded-lg transition-colors cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>

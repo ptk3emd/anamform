@@ -38,6 +38,24 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
   const [speechNotice, setSpeechNotice] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
 
+  // Auto-advance must call the latest onNext (it validates against the freshest
+  // answers) and must fire once, even on a double tap or after the card changes.
+  const onNextRef = useRef(onNext);
+  onNextRef.current = onNext;
+  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const advanceSoon = (ms: number) => {
+    if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    advanceTimer.current = setTimeout(() => {
+      advanceTimer.current = null;
+      onNextRef.current();
+    }, ms);
+  };
+  useEffect(() => {
+    return () => {
+      if (advanceTimer.current) clearTimeout(advanceTimer.current);
+    };
+  }, [item.linkId]);
+
   // Auto-focus input on mount or question change
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -106,20 +124,23 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
   // Keyboard shortcut listener for choices (A, B, C...) and boolean (S, N)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Dialogs (índice, limpar respostas) own the keyboard while open
+      const target = e.target as HTMLElement | null;
+      if (target?.closest?.('[role="dialog"],[role="alertdialog"],[aria-modal="true"]')) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+
       const activeTag = document.activeElement?.tagName.toLowerCase();
       if (activeTag === 'input' || activeTag === 'textarea') {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        // Holding Enter must not race through the questionnaire
+        if (e.key === 'Enter' && !e.shiftKey && !e.repeat) {
           e.preventDefault();
-          onNext();
+          onNextRef.current();
         }
         return;
       }
 
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        onNext();
-        return;
-      }
+      // Enter outside inputs is handled once, by the global navigation in App
+      if (e.key === 'Enter') return;
 
       if (item.type === 'choice' && item.answerOption) {
         const pressedKey = e.key.toUpperCase();
@@ -138,13 +159,13 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
           e.preventDefault();
           onChange(true);
           if (theme.autoAdvanceOnSingleChoice) {
-            setTimeout(onNext, 250);
+            advanceSoon(250);
           }
         } else if (key === 'N' || key === '0') {
           e.preventDefault();
           onChange(false);
           if (theme.autoAdvanceOnSingleChoice) {
-            setTimeout(onNext, 250);
+            advanceSoon(250);
           }
         }
       }
@@ -165,7 +186,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
     } else {
       onChange(optValue);
       if (theme.autoAdvanceOnSingleChoice) {
-        setTimeout(onNext, 260);
+        advanceSoon(260);
       }
     }
   };
@@ -229,7 +250,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
   const isEvaScale = item.linkId.includes('dor_intensidade') || (item.unit === '/ 10' && item.type === 'integer');
 
   return (
-    <div className={`w-full max-w-[760px] flex flex-col ${alignmentClass} px-4 py-6 md:py-8`}>
+    <div className={`w-full max-w-[760px] flex flex-col ${alignmentClass} px-4 py-6 md:py-8 min-w-0`}>
       {/* Category Kicker */}
       {item.category && (
         <div className="flex items-center gap-2 mb-2 text-sm font-medium text-[#2A222B]/65">
@@ -241,7 +262,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
       )}
 
       {/* Question Header & Title */}
-      <div className="flex items-baseline gap-3 mb-2 w-full">
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-baseline sm:gap-3 mb-3 w-full min-w-0">
         <span
           className="shrink-0 text-sm md:text-base font-mono-code font-semibold px-2 py-0.5 rounded text-white"
           style={{ backgroundColor: theme.brandColor }}
@@ -249,7 +270,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
           {item.prefix ? item.prefix : questionIndex + 1}<span aria-hidden="true"> &rarr;</span>
         </span>
         <h2
-          className={`font-normal text-[#2A222B] tracking-tight w-full ${titleSizeClass} ${fontFamilyClass}`}
+          className={`font-normal text-[#2A222B] tracking-tight min-w-0 flex-1 [text-wrap:pretty] [overflow-wrap:anywhere] ${titleSizeClass} ${fontFamilyClass}`}
         >
           {item.text}
         </h2>
@@ -257,7 +278,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
 
       {/* Help text / Description */}
       {item.helpText && (
-        <p className="text-sm md:text-base text-[#2A222B]/70 mb-4 font-normal max-w-xl">
+        <p className="text-sm md:text-base text-[#2A222B]/70 mb-4 font-normal max-w-xl [overflow-wrap:anywhere]">
           {item.helpText}
         </p>
       )}
@@ -288,7 +309,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
                     aria-label={`Dor ${score} de 10`}
                     onClick={() => {
                       onChange(score);
-                      if (theme.autoAdvanceOnSingleChoice) setTimeout(onNext, 250);
+                      if (theme.autoAdvanceOnSingleChoice) advanceSoon(250);
                     }}
                     className={`min-h-11 py-3 rounded-lg font-mono-code text-sm font-semibold transition-[transform,background-color,box-shadow] duration-200 cursor-pointer ${
                       isSelected
@@ -318,6 +339,10 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
                 value={value || ''}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={item.placeholder || 'Digite sua resposta aqui...'}
+                maxLength={5000}
+                aria-invalid={!!error}
+                aria-describedby={error ? `${item.linkId}-error` : undefined}
+                aria-label={item.text}
                 className="w-full text-base md:text-xl p-3 pr-14 bg-transparent border-b-2 border-[#2A222B]/20 text-[#2A222B] placeholder:text-[#2A222B]/35 focus:border-[#2A222B] focus:outline-none transition-colors resize-none rounded-t-lg bg-[#2A222B]/[0.02]"
               />
             ) : (
@@ -327,6 +352,12 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
                 value={value || ''}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={item.placeholder || 'Digite sua resposta aqui...'}
+                maxLength={300}
+                autoComplete="off"
+                enterKeyHint="next"
+                aria-invalid={!!error}
+                aria-describedby={error ? `${item.linkId}-error` : undefined}
+                aria-label={item.text}
                 className="w-full text-lg md:text-2xl py-3 pl-1 pr-14 bg-transparent border-b-2 border-[#2A222B]/25 text-[#2A222B] placeholder:text-[#2A222B]/35 focus:border-[#2A222B] focus:outline-none transition-colors"
               />
             )}
@@ -361,6 +392,11 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
             <input
               ref={inputRef as any}
               type="number"
+              inputMode={item.type === 'decimal' ? 'decimal' : 'numeric'}
+              enterKeyHint="next"
+              aria-invalid={!!error}
+              aria-describedby={error ? `${item.linkId}-error` : undefined}
+              aria-label={item.text}
               step={item.type === 'decimal' ? '0.1' : '1'}
               value={value !== undefined ? value : ''}
               onChange={(e) => onChange(e.target.value)}
@@ -381,6 +417,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
             <input
               ref={inputRef as any}
               type="date"
+              aria-label={item.text}
               value={value || ''}
               onChange={(e) => onChange(e.target.value)}
               className="text-lg md:text-2xl py-2.5 px-3 rounded-lg border-2 border-[#2A222B]/20 bg-white text-[#2A222B] focus:border-[#2A222B] focus:outline-none transition-colors font-sans cursor-pointer shadow-xs"
@@ -396,7 +433,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
               aria-pressed={value === true}
               onClick={() => {
                 onChange(true);
-                if (theme.autoAdvanceOnSingleChoice) setTimeout(onNext, 250);
+                if (theme.autoAdvanceOnSingleChoice) advanceSoon(250);
               }}
               className={`flex items-center justify-between p-4 rounded-xl border-2 transition-[background-color,border-color,color,box-shadow] duration-200 font-medium text-base md:text-lg text-left cursor-pointer active:scale-[0.99] ${
                 value === true
@@ -424,7 +461,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
               aria-pressed={value === false}
               onClick={() => {
                 onChange(false);
-                if (theme.autoAdvanceOnSingleChoice) setTimeout(onNext, 250);
+                if (theme.autoAdvanceOnSingleChoice) advanceSoon(250);
               }}
               className={`flex items-center justify-between p-4 rounded-xl border-2 transition-[background-color,border-color,color,box-shadow] duration-200 font-medium text-base md:text-lg text-left cursor-pointer active:scale-[0.99] ${
                 value === false
@@ -478,7 +515,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
                       : 'border-[#2A222B]/15 bg-white text-[#2A222B] hover:border-[#2A222B]/40 hover:bg-[#2A222B]/[0.02]'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     {hotkey && (
                       <span
                         className={`w-6 h-6 rounded flex items-center justify-center text-xs font-mono-code border font-semibold ${
@@ -490,7 +527,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
                         {hotkey}
                       </span>
                     )}
-                    <span className="text-sm md:text-base font-medium">{optLabel}</span>
+                    <span className="text-sm md:text-base font-medium [overflow-wrap:anywhere]">{optLabel}</span>
                   </div>
                   {isSelected && <Check className="w-5 h-5 text-white shrink-0 ml-2" />}
                 </button>
@@ -514,7 +551,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
                   onClick={() => {
                     onChange(chip);
                     if (theme.autoAdvanceOnSingleChoice && !item.multiselect) {
-                      setTimeout(onNext, 250);
+                      advanceSoon(250);
                     }
                   }}
                   className="min-h-9 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-mono-code text-[#2A222B] transition-colors border border-slate-200 shadow-2xs cursor-pointer"
@@ -535,9 +572,10 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
             role="alert"
-            className="flex items-center gap-2 text-rose-600 text-sm font-medium mt-2 bg-rose-50 px-3 py-2 rounded-lg border border-rose-200"
+            id={`${item.linkId}-error`}
+            className="flex items-start gap-2 text-rose-700 text-sm font-medium mt-2 bg-rose-50 px-3 py-2 rounded-lg border border-rose-200 max-w-xl"
           >
-            <AlertCircle className="w-4 h-4 shrink-0" />
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
             <span>{error}</span>
           </motion.div>
         )}

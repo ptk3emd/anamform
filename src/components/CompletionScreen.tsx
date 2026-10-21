@@ -26,9 +26,9 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
   theme,
 }) => {
   return (
-    <div className="w-full max-w-[760px] flex flex-col items-start px-4 py-12 animate-in fade-in duration-300">
+    <div className="w-full max-w-[760px] flex flex-col items-start px-4 py-12">
       <div className="w-14 h-14 rounded-2xl bg-emerald-500 text-white flex items-center justify-center mb-6 shadow-md">
-        <CheckCircle2 className="w-8 h-8" />
+        <CheckCircle2 className="w-8 h-8" aria-hidden="true" />
       </div>
 
       <h1 className="text-3xl md:text-4xl font-display font-medium text-[#2A222B] mb-3">
@@ -36,16 +36,16 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
       </h1>
 
       <p className="text-base md:text-lg text-[#2A222B]/75 mb-6 max-w-xl leading-relaxed">
-        Os dados clínicos do paciente <strong>{patientName || 'Atendido'}</strong> foram estruturados e validados de acordo com o padrão <strong>FHIR R4 QuestionnaireResponse</strong> e convertidos para caminhos FLAT openEHR.
+        Os dados clínicos do paciente <strong className="[overflow-wrap:anywhere]">{patientName || 'Atendido'}</strong> foram estruturados e validados de acordo com o padrão <strong>FHIR R4 QuestionnaireResponse</strong> e convertidos para caminhos FLAT openEHR.
       </p>
 
       {/* Stats */}
-      <div className="flex items-center gap-4 p-4 rounded-xl bg-white border border-[#2A222B]/10 shadow-xs mb-8 w-full max-w-md text-sm">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-3 p-4 rounded-xl bg-white border border-[#2A222B]/10 shadow-xs mb-8 w-full max-w-md text-sm">
         <div>
           <span className="text-[#2A222B]/65 block text-xs">Total de campos preenchidos</span>
           <span className="text-lg font-bold text-[#2A222B]">{totalAnswered} itens clínicos</span>
         </div>
-        <div className="w-[1px] h-8 bg-[#2A222B]/10" />
+        <div className="hidden sm:block w-[1px] h-8 bg-[#2A222B]/10" />
         <div>
           <span className="text-[#2A222B]/65 block text-xs">Status da interoperabilidade</span>
           <span className="text-emerald-700 font-semibold text-sm flex items-center gap-1">
@@ -78,8 +78,9 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
         <button
           type="button"
           onClick={onRestart}
-          className="p-3 text-[#2A222B]/60 hover:text-[#2A222B] transition-colors"
-          title="Nova Anamnese"
+          className="size-11 flex items-center justify-center text-[#2A222B]/65 hover:text-[#2A222B] transition-colors"
+          title="Nova anamnese"
+          aria-label="Nova anamnese"
         >
           <RotateCcw className="w-5 h-5" />
         </button>

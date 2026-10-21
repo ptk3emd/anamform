@@ -20,10 +20,10 @@ export const Header: React.FC<HeaderProps> = ({
   progressPercent,
 }) => {
   return (
-    <header className="sticky top-0 z-30 bg-[#F6F4EF]/80 backdrop-blur-md border-b border-[#2A222B]/5 px-4 md:px-8 py-2.5 transition-colors">
-      <div className="max-w-4xl mx-auto flex items-center justify-between gap-3">
+    <header className="sticky top-0 z-30 bg-[#F6F4EF]/80 backdrop-blur-md border-b border-[#2A222B]/5 py-2.5 transition-colors">
+      <div className="max-w-[760px] mx-auto px-4 flex items-center justify-between gap-3">
         {/* Brand */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 shrink-0">
           <div className="w-7 h-7 rounded-lg bg-[#2A222B] text-white flex items-center justify-center shadow-xs">
             <Stethoscope className="w-3.5 h-3.5 text-emerald-400" />
           </div>
@@ -33,12 +33,12 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Current Category / Step indicator */}
-        <div className="min-w-0 text-xs text-[#2A222B]/60 truncate max-w-[200px] sm:max-w-xs font-medium">
+        <div className="min-w-0 flex-1 text-xs text-[#2A222B]/65 truncate text-right sm:text-center font-medium" title={currentCategory || currentQuestionnaire.title}>
           {currentCategory || currentQuestionnaire.title}
         </div>
 
         {/* Subtle percentage */}
-        <div className="text-xs font-mono-code text-[#2A222B]/65">
+        <div className="shrink-0 w-9 text-right text-xs font-mono-code text-[#2A222B]/65" aria-label={`${progressPercent}% concluído`}>
           {progressPercent}%
         </div>
       </div>
