@@ -56,8 +56,10 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
     };
   }, [item.linkId]);
 
-  // Auto-focus input on mount or question change
+  // Auto-focus input on mount or question change, only where a pointer is fine
+  // (desktop). On touch screens, focusing opens the keyboard without a tap.
   useEffect(() => {
+    if (!window.matchMedia('(pointer: fine)').matches) return;
     const timer = setTimeout(() => {
       if (inputRef.current) {
         inputRef.current.focus();
