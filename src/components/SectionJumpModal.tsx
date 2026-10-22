@@ -28,7 +28,7 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMode, setFilterMode] = useState<'all' | 'pending' | 'completed'>('all');
   const dialogRef = useRef<HTMLDivElement>(null);
-  useDialogFocus(true, dialogRef, onClose);
+  useDialogFocus(true, dialogRef, onClose, false);
   const normalize = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
   // Escape closes the drawer; page scroll stays put while it is open
