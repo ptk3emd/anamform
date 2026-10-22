@@ -11,6 +11,7 @@ import {
   QuestionnaireResponseItem,
   QuestionnaireResponseAnswer,
 } from '../types/fhir';
+import { hasAnswer, validateAnswer } from './answers';
 
 /**
  * Checks whether an item should be enabled based on its enableWhen clauses
@@ -30,10 +31,11 @@ export function isItemEnabled(
 
     switch (clause.operator) {
       case 'exists': {
-        const hasValue = parentAnswer !== undefined && parentAnswer !== null && parentAnswer !== '';
+        const hasValue = hasAnswer(parentAnswer);
         return clause.answerBoolean === false ? !hasValue : hasValue;
       }
       case '=': {
+        if (!hasAnswer(parentAnswer)) return false;
         if (clause.answerBoolean !== undefined) {
           return Boolean(parentAnswer) === clause.answerBoolean;
         }
@@ -55,6 +57,7 @@ export function isItemEnabled(
         return parentAnswer === clause.answerString;
       }
       case '!=': {
+        if (!hasAnswer(parentAnswer)) return false;
         if (clause.answerBoolean !== undefined) {
           return Boolean(parentAnswer) !== clause.answerBoolean;
         }
@@ -67,13 +70,13 @@ export function isItemEnabled(
         return parentAnswer !== clause.answerString;
       }
       case '>':
-        return Number(parentAnswer) > (clause.answerInteger ?? clause.answerDecimal ?? 0);
+        return hasAnswer(parentAnswer) && Number(parentAnswer) > (clause.answerInteger ?? clause.answerDecimal ?? 0);
       case '<':
-        return Number(parentAnswer) < (clause.answerInteger ?? clause.answerDecimal ?? 0);
+        return hasAnswer(parentAnswer) && Number(parentAnswer) < (clause.answerInteger ?? clause.answerDecimal ?? 0);
       case '>=':
-        return Number(parentAnswer) >= (clause.answerInteger ?? clause.answerDecimal ?? 0);
+        return hasAnswer(parentAnswer) && Number(parentAnswer) >= (clause.answerInteger ?? clause.answerDecimal ?? 0);
       case '<=':
-        return Number(parentAnswer) <= (clause.answerInteger ?? clause.answerDecimal ?? 0);
+        return hasAnswer(parentAnswer) && Number(parentAnswer) <= (clause.answerInteger ?? clause.answerDecimal ?? 0);
       default:
         return true;
     }
@@ -96,14 +99,13 @@ export function getActiveQuestions(
 
   function traverse(items: QuestionnaireItem[]) {
     for (const item of items) {
+      if (!isItemEnabled(item, answers)) continue;
       if (item.type === 'group') {
         if (item.item) {
           traverse(item.item);
         }
-      } else {
-        if (isItemEnabled(item, answers)) {
-          result.push(item);
-        }
+      } else if (item.type !== 'display') {
+        result.push(item);
       }
     }
   }
@@ -126,9 +128,14 @@ export function buildQuestionnaireResponse(
     if (!isItemEnabled(item, answers)) {
       return null;
     }
+    if (item.type === 'display') return null;
+    if (item.type === 'group') {
+      const children = (item.item || []).map(processItem).filter((child): child is QuestionnaireResponseItem => child !== null);
+      return children.length ? { linkId: item.linkId, text: item.text, item: children } : null;
+    }
 
     const value = answers[item.linkId];
-    if (value === undefined || value === null || value === '') {
+    if (!hasAnswer(value) || validateAnswer(item, value)) {
       return null;
     }
 
@@ -137,32 +144,22 @@ export function buildQuestionnaireResponse(
     if (item.type === 'boolean') {
       responseAnswers.push({ valueBoolean: Boolean(value) });
     } else if (item.type === 'integer') {
-      responseAnswers.push({ valueInteger: parseInt(value, 10) || 0 });
+      responseAnswers.push({ valueInteger: Number(value) });
     } else if (item.type === 'decimal') {
-      responseAnswers.push({ valueDecimal: parseFloat(value) || 0 });
-    } else if (item.type === 'date' || item.type === 'dateTime') {
+      responseAnswers.push({ valueDecimal: Number(value) });
+    } else if (item.type === 'date') {
       responseAnswers.push({ valueDate: String(value) });
-    } else if (item.type === 'choice') {
-      if (Array.isArray(value)) {
-        value.forEach((v) => {
-          const opt = item.answerOption?.find((o) => o.valueCoding?.code === v || o.valueString === v);
-          responseAnswers.push({
-            valueCoding: {
-              code: String(v),
-              display: opt?.valueCoding?.display || String(v),
-              system: opt?.valueCoding?.system || 'http://snomed.info/sct',
-            },
-          });
-        });
-      } else {
-        const opt = item.answerOption?.find((o) => o.valueCoding?.code === value || o.valueString === value);
-        responseAnswers.push({
-          valueCoding: {
-            code: String(value),
-            display: opt?.valueCoding?.display || String(value),
-            system: opt?.valueCoding?.system || 'http://snomed.info/sct',
-          },
-        });
+    } else if (item.type === 'dateTime') {
+      responseAnswers.push({ valueDateTime: String(value) });
+    } else if (item.type === 'time') {
+      responseAnswers.push({ valueTime: String(value) });
+    } else if (item.type === 'choice' || item.type === 'open-choice') {
+      for (const selected of Array.isArray(value) ? value.filter(hasAnswer) : [value]) {
+        const opt = item.answerOption?.find(o => o.valueCoding?.code === selected || o.valueString === selected || o.valueInteger === selected);
+        if (opt?.valueCoding) responseAnswers.push({ valueCoding: { ...opt.valueCoding } });
+        else if (opt?.valueInteger !== undefined) responseAnswers.push({ valueInteger: opt.valueInteger });
+        else if (opt?.valueString !== undefined || item.type === 'open-choice') responseAnswers.push({ valueString: String(selected) });
+        else responseAnswers.push({ valueCoding: { code: String(selected), display: String(selected) } });
       }
     } else {
       // string, text, url
@@ -189,14 +186,7 @@ export function buildQuestionnaireResponse(
     questionnaire: questionnaire.url || `Questionnaire/${questionnaire.id}`,
     status,
     authored: new Date().toISOString(),
-    subject: {
-      reference: `Patient/${answers['anamnese/identificacao/nome_completo'] ? encodeURIComponent(answers['anamnese/identificacao/nome_completo']) : 'anonymous'}`,
-      display: answers['anamnese/identificacao/nome_completo'] || 'Paciente Anônimo',
-    },
-    author: {
-      reference: 'Practitioner/dra-clinica',
-      display: '.anamform Assistente Clínico',
-    },
+    ...(hasAnswer(answers['anamnese/identificacao/nome_completo']) ? { subject: { display: String(answers['anamnese/identificacao/nome_completo']) } } : {}),
     item: responseItems,
   };
 }

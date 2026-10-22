@@ -101,6 +101,8 @@ input, textarea {
     color: #000000 !important;
     padding: 0 !important;
     margin: 0 !important;
+    display: block !important;
+    overflow: visible !important;
   }
 
   pre {
@@ -111,3 +113,12 @@ input, textarea {
     line-height: 1.4 !important;
   }
 }
+
+.question-parent { font-size: 12px; line-height: 1.6; color: #68616a; margin-bottom: 16px; max-width: 64ch; }
+.question-example { width: 100%; border-top: 1px solid #d7d2cc; margin-top: 16px; padding-top: 8px; color: #514a53; font-size: 13px; line-height: 1.8; }
+.question-example summary { cursor: pointer; min-height: 44px; padding: 10px 0; font-weight: 600; }
+.question-example p { max-width: 68ch; margin: 4px 0 12px; }
+.question-example small { display: block; font-size: 11px; color: #68616a; margin-bottom: 8px; }
+.question-text-action { min-height: 44px; padding: 10px 12px; color: #514a53; font-size: 13px; cursor: pointer; border-radius: 6px; }
+.question-text-action:hover { background: #eae7e1; color: #2a222b; }
+input::placeholder, textarea::placeholder { color: #746d76 !important; opacity: 1; }

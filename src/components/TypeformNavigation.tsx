@@ -22,15 +22,16 @@ export const TypeformNavigation: React.FC<TypeformNavigationProps> = ({
   totalQuestions,
   onPrev,
   onNext,
+  answeredCount,
 }) => {
-  const progressPercent = totalQuestions > 0 ? Math.round(((currentIndex + 1) / totalQuestions) * 100) : 0;
+  const progressPercent = totalQuestions > 0 ? Math.min(100, Math.round((answeredCount / totalQuestions) * 100)) : 0;
 
   return (
     <>
       {/* Top Progress Bar - Fixed at top of viewport */}
       <div
         role="progressbar"
-        aria-label="Progresso da anamnese"
+        aria-label="Itens preenchidos da anamnese"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={progressPercent}
@@ -54,7 +55,7 @@ export const TypeformNavigation: React.FC<TypeformNavigationProps> = ({
             onClick={onPrev}
             aria-label="Pergunta anterior"
             className="size-11 flex items-center justify-center text-[#2A222B]/70 hover:text-[#2A222B] hover:bg-[#2A222B]/5 active:bg-[#2A222B]/10 disabled:opacity-25 disabled:pointer-events-none transition-colors cursor-pointer"
-            title="Pergunta anterior (Shift + Tab ou Seta Cima)"
+            title="Pergunta anterior (Seta Cima)"
           >
             <ChevronUp className="w-4 h-4 stroke-[2.5]" />
           </button>
@@ -62,6 +63,7 @@ export const TypeformNavigation: React.FC<TypeformNavigationProps> = ({
           <button
             type="button"
             onClick={onNext}
+            disabled={currentIndex >= totalQuestions}
             className="size-11 flex items-center justify-center text-[#2A222B]/70 hover:text-[#2A222B] hover:bg-[#2A222B]/5 active:bg-[#2A222B]/10 transition-colors cursor-pointer"
             aria-label="Próxima pergunta"
             title="Próxima pergunta (Enter ou Seta Baixo)"

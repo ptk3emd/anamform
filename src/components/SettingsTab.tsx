@@ -73,7 +73,6 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     { label: 'Papel Quente (#F6F4EF)', value: '#F6F4EF' },
     { label: 'Branco Puro (#FFFFFF)', value: '#FFFFFF' },
     { label: 'Cinza Suave (#F8FAFC)', value: '#F8FAFC' },
-    { label: 'Escuro Minimalista (#18181B)', value: '#18181B' },
   ];
 
   const openEhrFlat = convertFhirToOpenEHRFlat(questionnaireResponse);
@@ -115,7 +114,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
     setEhrbaseSuccess(null);
     setTimeout(() => {
       setIsSubmitting(false);
-      setEhrbaseSuccess(`Composição gravada com sucesso no EHRbase! UID: ${Math.random().toString(36).substring(2, 12)}::openEHR.local::1`);
+      setEhrbaseSuccess('Simulação concluída. Nenhum dado foi enviado ou gravado em servidor.');
     }, 1100);
   };
 
@@ -186,7 +185,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 </h3>
               </div>
               <p className="text-xs md:text-sm text-emerald-800 mt-1 max-w-lg">
-                Carrega instantaneamente o caso de <strong>Dr. Marcos Aurélio (SCA / Dor Torácica)</strong> com todos os 144 itens semiológicos preenchidos (identificação, ROS 13 sistemas, exame físico IPPA completo e prescrição).
+                Carrega um caso fictício de <strong>dor torácica</strong> para explorar a coleta e o prontuário. Os novos subitens ficam disponíveis para detalhamento. As respostas atuais deste modelo serão substituídas.
               </p>
             </div>
             <button
@@ -229,7 +228,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                         {q.title}
                       </div>
                       <div className="text-xs text-[#2A222B]/60 mt-0.5">
-                        {q.description} ({q.item.length} itens clínicos mapeados em FHIR R4)
+                        {q.description}
                       </div>
                     </div>
                     {isSelected && (
@@ -510,7 +509,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
               className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#198754] text-white hover:bg-[#146c43] text-xs font-medium transition-colors shadow-2xs cursor-pointer"
             >
               <Send className="w-3.5 h-3.5" />
-              <span>{isSubmitting ? 'Transmitindo...' : 'Transmitir ao EHRbase'}</span>
+              <span>{isSubmitting ? 'Simulando...' : 'Simular envio ao EHRbase'}</span>
             </button>
           </div>
 
@@ -522,7 +521,7 @@ export const SettingsTab: React.FC<SettingsTabProps> = ({
                 <span className="font-medium">{ehrbaseSuccess}</span>
               </div>
               <span className="font-mono-code bg-emerald-200/60 px-1.5 py-0.5 rounded text-[10px]">
-                HTTP 201 Created
+                Demonstração local
               </span>
             </div>
           )}

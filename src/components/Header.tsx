@@ -38,7 +38,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Subtle percentage */}
-        <div className="shrink-0 w-9 text-right text-xs font-mono-code text-[#2A222B]/65" aria-label={`${progressPercent}% concluído`}>
+        <div className="shrink-0 w-9 text-right text-xs font-mono-code text-[#2A222B]/65" aria-label={`${progressPercent}% dos itens preenchidos`}>
           {progressPercent}%
         </div>
       </div>

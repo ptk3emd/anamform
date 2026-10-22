@@ -55,13 +55,13 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
 
       {/* Description */}
       <p className="w-full text-base md:text-lg text-[#2A222B]/70 mb-8 max-w-xl leading-relaxed">
-        Roteiro de anamnese completa com sequência propedêutica IPPA.
+        Uma conversa por vez. Registre a história clínica, os achados do exame e o plano de cuidado no seu ritmo.
       </p>
 
       {/* Metadata */}
       <div className="flex items-center gap-2 text-sm text-[#2A222B]/65 mb-10 font-medium">
         <Clock className="w-4 h-4 text-[#2A222B]/45" />
-        <span>Tempo estimado: 45 a 60 min</span>
+        <span>{questionnaire.item.length} itens opcionais · preencha apenas o que for pertinente</span>
       </div>
 
       {/* Start Button & Quick Actions */}
@@ -82,9 +82,9 @@ export const WelcomeScreen: React.FC<WelcomeScreenProps> = ({
             type="button"
             onClick={onLoadSample}
             className="flex items-center gap-2 px-5 py-3.5 min-h-11 rounded-xl bg-white border border-[#2A222B]/15 text-[#2A222B] hover:bg-slate-50 font-medium text-sm transition-all shadow-xs cursor-pointer"
-            title="Carregar caso pré-preenchido de 144 itens para teste rápido"
+            title="Carregar caso fictício para explorar o formulário"
           >
-            <span>Carregar Caso Clínico (SCA)</span>
+            <span>Explorar caso demonstrativo</span>
           </button>
         )}
 

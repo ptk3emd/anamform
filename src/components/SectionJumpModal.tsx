@@ -4,9 +4,11 @@
  * Section Jump & Outline Drawer with Real-Time Search & Status Filters
  */
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { X, CheckCircle2, Circle, ArrowRight, Search } from 'lucide-react';
 import { QuestionnaireItem } from '../types/fhir';
+import { hasAnswer as isAnswered } from '../utils/answers';
+import { useDialogFocus } from '../utils/useDialogFocus';
 
 interface SectionJumpModalProps {
   questions: QuestionnaireItem[];
@@ -25,6 +27,9 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMode, setFilterMode] = useState<'all' | 'pending' | 'completed'>('all');
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(true, dialogRef, onClose);
+  const normalize = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
   // Escape closes the drawer; page scroll stays put while it is open
   useEffect(() => {
@@ -44,11 +49,7 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
   const filteredQuestions = useMemo(() => {
     return questions
       .map((item, originalIndex) => {
-        const hasAnswer =
-          answers[item.linkId] !== undefined &&
-          answers[item.linkId] !== null &&
-          answers[item.linkId] !== '' &&
-          (!Array.isArray(answers[item.linkId]) || answers[item.linkId].length > 0);
+        const hasAnswer = isAnswered(answers[item.linkId]);
         return { item, originalIndex, hasAnswer };
       })
       .filter(({ item, hasAnswer }) => {
@@ -56,11 +57,8 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
         if (filterMode === 'completed' && !hasAnswer) return false;
 
         if (searchTerm.trim() !== '') {
-          const term = searchTerm.toLowerCase();
-          const matchText = item.text.toLowerCase().includes(term);
-          const matchCat = item.category?.toLowerCase().includes(term);
-          const matchPrefix = item.prefix?.toLowerCase().includes(term);
-          return matchText || matchCat || matchPrefix;
+          const term = normalize(searchTerm.trim());
+          return normalize([item.text, item.category, item.prefix, item.parentText, item.helpText, ...item.suggestions || [], ...(item.answerOption || []).map(o => o.valueCoding?.display || o.valueString)].join(' ')).includes(term);
         }
 
         return true;
@@ -83,13 +81,13 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
   const totalAnswered = useMemo(() => {
     return questions.filter((item) => {
       const val = answers[item.linkId];
-      return val !== undefined && val !== null && val !== '' && (!Array.isArray(val) || val.length > 0);
+      return isAnswered(val);
     }).length;
   }, [questions, answers]);
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/40 backdrop-blur-xs" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div role="dialog" aria-modal="true" aria-label="Índice da anamnese" className="w-full max-w-md bg-white h-dvh shadow-2xl flex flex-col border-l border-[#2A222B]/10 animate-in slide-in-from-right duration-200">
+      <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-label="Índice da anamnese" className="w-full max-w-md bg-white h-dvh shadow-2xl flex flex-col border-l border-[#2A222B]/10 animate-in slide-in-from-right duration-200">
         {/* Header */}
         <div className="px-6 py-4 border-b border-[#2A222B]/10 space-y-3">
           <div className="flex items-center justify-between">
@@ -98,7 +96,7 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
                 Índice da Anamnese Médica
               </h3>
               <p className="text-xs text-[#2A222B]/60 mt-0.5">
-                {totalAnswered} de {questions.length} itens respondidos
+                {totalAnswered} de {questions.length} itens respondidos · todos opcionais
               </p>
             </div>
             <button
@@ -116,6 +114,7 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
             <Search className="w-4 h-4 text-[#2A222B]/55 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
+              aria-label="Buscar itens e subitens"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Buscar item semiológico (ex: Glasgow, Murphy, Dor)..."
@@ -145,7 +144,7 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
                   : 'bg-slate-100 text-[#2A222B]/70 hover:bg-slate-200'
               }`}
             >
-              Pendentes ({questions.length - totalAnswered})
+              Em branco ({questions.length - totalAnswered})
             </button>
             <button
               type="button"
@@ -205,9 +204,9 @@ export const SectionJumpModal: React.FC<SectionJumpModalProps> = ({
                               }`}
                             />
                           )}
-                          <span className="truncate">
-                            {item.prefix ? `${item.prefix} ` : ''}
-                            {item.text}
+                          <span className={`min-w-0 ${item.parentLinkId ? 'pl-3 border-l border-current/20' : ''}`}>
+                            <span className="block text-xs leading-relaxed">{item.prefix ? `${item.prefix} · ` : ''}{item.text}</span>
+                            {item.parentText && <span className="block text-[11px] mt-1 opacity-80">Subitem · {item.parentText}</span>}
                           </span>
                         </div>
                         {isCurrent && <ArrowRight className="w-4 h-4 shrink-0" />}

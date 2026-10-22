@@ -32,11 +32,11 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
       </div>
 
       <h1 className="text-3xl md:text-4xl font-display font-medium text-[#2A222B] mb-3">
-        Anamnese Concluída com Sucesso!
+        Coleta encerrada. Prontuário pronto para revisar.
       </h1>
 
       <p className="text-base md:text-lg text-[#2A222B]/75 mb-6 max-w-xl leading-relaxed">
-        Os dados clínicos do paciente <strong className="[overflow-wrap:anywhere]">{patientName || 'Atendido'}</strong> foram estruturados e validados de acordo com o padrão <strong>FHIR R4 QuestionnaireResponse</strong> e convertidos para caminhos FLAT openEHR.
+        Você registrou {totalAnswered} itens{patientName ? <> para <strong className="[overflow-wrap:anywhere]">{patientName}</strong></> : ''}. Os demais campos continuam em branco. Revise o texto ou retome a coleta quando precisar.
       </p>
 
       {/* Stats */}
@@ -47,9 +47,9 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
         </div>
         <div className="hidden sm:block w-[1px] h-8 bg-[#2A222B]/10" />
         <div>
-          <span className="text-[#2A222B]/65 block text-xs">Status da interoperabilidade</span>
+          <span className="text-[#2A222B]/65 block text-xs">Próximo passo</span>
           <span className="text-emerald-700 font-semibold text-sm flex items-center gap-1">
-            Pronto para EHRbase / PEP
+            Revisar o registro
           </span>
         </div>
       </div>
@@ -79,8 +79,8 @@ export const CompletionScreen: React.FC<CompletionScreenProps> = ({
           type="button"
           onClick={onRestart}
           className="size-11 flex items-center justify-center text-[#2A222B]/65 hover:text-[#2A222B] transition-colors"
-          title="Nova anamnese"
-          aria-label="Nova anamnese"
+          title="Retomar esta coleta"
+          aria-label="Retomar esta coleta"
         >
           <RotateCcw className="w-5 h-5" />
         </button>

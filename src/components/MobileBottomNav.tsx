@@ -57,7 +57,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           type="button"
           onClick={onOpenSectionIndex}
           className="flex flex-col items-center justify-center min-h-11 py-1 px-3 rounded-xl transition-all text-[#2A222B]/65 hover:text-[#2A222B]/80 cursor-pointer"
-          title="Ver as 29 seções e 144 itens semiológicos"
+          title={`Explorar os ${totalQuestions} itens opcionais`}
         >
           <ListOrdered className="w-5 h-5 stroke-[1.8]" />
           <span className="text-[11px] mt-0.5 tracking-tight whitespace-nowrap">

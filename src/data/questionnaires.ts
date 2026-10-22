@@ -7,8 +7,9 @@
  */
 
 import { Questionnaire } from '../types/fhir';
+import { prepareQuestionnaire } from './clinicalGuidance';
 
-export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
+const HOSPITAL_ADMISSION_BASE: Questionnaire = {
   resourceType: 'Questionnaire',
   id: 'anamnese-hospitalar-admissao-completa',
   url: 'http://hospital.org/fhir/Questionnaire/anamnese-hospitalar-admissao-completa',
@@ -32,7 +33,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '1. Identificação e Dados Demográficos',
       text: 'Nome completo do paciente:',
       type: 'string',
-      required: true,
+      required: false,
       placeholder: 'ex: Dr. Marcos Aurélio de Souza Lima',
       helpText: 'Identificação civil para prontuário e etiqueta hospitalar',
     },
@@ -42,7 +43,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '1. Identificação e Dados Demográficos',
       text: 'Data de nascimento / Idade:',
       type: 'date',
-      required: true,
+      required: false,
       helpText: 'Utilizado para cálculo de posologia, faixas de risco e interações etárias',
     },
     {
@@ -51,7 +52,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '1. Identificação e Dados Demográficos',
       text: 'Sexo biológico atribuído ao nascimento:',
       type: 'choice',
-      required: true,
+      required: false,
       answerOption: [
         { valueCoding: { code: 'female', display: 'Feminino', system: 'http://hl7.org/fhir/administrative-gender' } },
         { valueCoding: { code: 'male', display: 'Masculino', system: 'http://hl7.org/fhir/administrative-gender' } },
@@ -138,7 +139,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '2. Queixa Principal e HDA',
       text: 'Queixa Principal (motivo da consulta):',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: "Dor no peito com aperto forte e falta de ar há 4 horas"',
       helpText: 'Registrar de preferência nas palavras do próprio paciente ou cuidador',
     },
@@ -148,11 +149,13 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '2. Queixa Principal e HDA',
       text: 'Duração dos sintomas atuais:',
       type: 'choice',
-      required: true,
+      required: false,
       answerOption: [
         { valueCoding: { code: 'hiperagudo', display: 'Hiperagudo (< 6 horas)' } },
         { valueCoding: { code: 'agudo_24h', display: 'Agudo (6 a 24 horas)' } },
+        { valueCoding: { code: 'um_dois_dias', display: 'Entre 24 e 48 horas' } },
         { valueCoding: { code: 'subagudo_dias', display: 'Subagudo (2 a 7 dias)' } },
+        { valueCoding: { code: 'uma_duas_semanas', display: 'Entre 8 e 14 dias' } },
         { valueCoding: { code: 'cronico_semanas', display: 'Crônico (> 2 semanas)' } },
       ],
     },
@@ -171,7 +174,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '2. Queixa Principal e HDA',
       text: 'Relato cronológico detalhado da HDA:',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'Paciente relata início súbito dos sintomas... Descreva evolução, tratamentos prévios realizados e resposta terapêutica...',
       helpText: 'Você pode utilizar o botão de microfone para ditar o histórico clínico por voz',
     },
@@ -232,7 +235,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '3. Antecedentes Pessoais (AP)',
       text: 'Alergias (medicamentos, alimentos, contato) — DADO CRÍTICO DE SEGURANÇA:',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: ALERGIA A DIPIRONA (edema de glote e urticária); Nega alergia a iodo ou penicilina.',
       helpText: 'Destaque reações anafiláticas prévias',
     },
@@ -258,7 +261,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '3. Antecedentes Pessoais (AP)',
       text: 'Histórico obstétrico/ginecológico (Menarca, DUM, menopausa, partos/abortos, preventivo/mamografia):',
       type: 'text',
-      placeholder: 'ex: Menopausa aos 51 anos; DUM não aplicável; Preventivo e Mamografia atualizados em 2025; ou "Não aplicável (sexo masculino)".',
+      placeholder: 'ex: Menopausa aos 51 anos; data da última menstruação não informada; rastreamentos prévios descritos conforme relato e documentação.',
     },
     {
       linkId: 'anamnese/antecedentes/medicamentos_continuos',
@@ -266,7 +269,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '3. Antecedentes Pessoais (AP)',
       text: 'Medicamentos em uso contínuo (nome, dose, frequência, motivo e adesão):',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: Losartana 50mg 1x/dia cedo (boa adesão); Metformina 850mg 2x/dia após refeições; AAS 100mg almoço.',
     },
     {
@@ -325,7 +328,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '5. Hábitos e Estilo de Vida',
       text: 'Tabagismo e cálculo da Carga Tabágica (anos-maço):',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: Ex-tabagista; fumou 20 cigarros/dia durante 15 anos (Carga Tabágica = 15 anos-maço); Parou há 5 anos.',
       helpText: 'Fórmula: (nº de cigarros por dia ÷ 20) × anos de fumo',
     },
@@ -843,7 +846,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '18. Sistema Psiquiátrico',
       text: 'Ideação suicida, desesperança ou histórico de autolesão (investigar ativamente):',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: Nega categoricamente ideação suicida ativa ou passiva; planos de futuro preservados.',
       helpText: 'Item essencial de triagem segundo diretrizes clínicas internacionais',
     },
@@ -859,7 +862,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '19. Avaliação Geral e Sinais Vitais (Ectoscopia)',
       text: 'Estado geral (BEG, REG ou PEG):',
       type: 'choice',
-      required: true,
+      required: false,
       answerOption: [
         { valueCoding: { code: 'beg', display: 'Bom Estado Geral (BEG)' } },
         { valueCoding: { code: 'reg', display: 'Regular Estado Geral (REG)' } },
@@ -872,7 +875,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '19. Avaliação Geral e Sinais Vitais (Ectoscopia)',
       text: 'Nível de consciência (Escala de Coma de Glasgow):',
       type: 'choice',
-      required: true,
+      required: false,
       answerOption: [
         { valueCoding: { code: '15', display: 'Glasgow 15 (Alerta, orientado, colaborativo)' } },
         { valueCoding: { code: '14', display: 'Glasgow 14 (Leve confusão ou sonolência)' } },
@@ -902,7 +905,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '19. Avaliação Geral e Sinais Vitais (Ectoscopia)',
       text: 'Pressão Arterial (PA) em repouso (aferida em ambos os braços se possível):',
       type: 'string',
-      required: true,
+      required: false,
       placeholder: 'ex: BD: 155/95 mmHg | BE: 150/90 mmHg',
       unit: 'mmHg',
     },
@@ -912,7 +915,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '19. Avaliação Geral e Sinais Vitais (Ectoscopia)',
       text: 'Frequência Cardíaca e Pulso periférico (ritmo, amplitude e simetria — Porto):',
       type: 'string',
-      required: true,
+      required: false,
       placeholder: 'ex: FC 88 bpm; ritmo regular, pulsos radiais e femorais simétricos, cheios e amplos.',
     },
     {
@@ -921,16 +924,16 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '19. Avaliação Geral e Sinais Vitais (Ectoscopia)',
       text: 'Frequência Respiratória e Padrão ventilatório (Cantani, Kussmaul, Biot, Cheyne-Stokes — Rocco):',
       type: 'string',
-      required: true,
+      required: false,
       placeholder: 'ex: FR 20 irpm, padrão eupneico com incursões torácicas simétricas; sem ritmos patológicos.',
     },
     {
       linkId: 'anamnese/exame_fisico/temperatura',
       prefix: '96',
       category: '19. Avaliação Geral e Sinais Vitais (Ectoscopia)',
-      text: 'Temperatura axilar:',
+      text: 'Temperatura corporal:',
       type: 'decimal',
-      required: true,
+      required: false,
       placeholder: '36.6',
       unit: '°C',
     },
@@ -940,9 +943,9 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '19. Avaliação Geral e Sinais Vitais (Ectoscopia)',
       text: 'Saturação periférica de O2 (SpO2):',
       type: 'integer',
-      required: true,
+      required: false,
       placeholder: '97',
-      unit: '% em ar ambiente',
+      unit: '%',
     },
     {
       linkId: 'anamnese/exame_fisico/antropometria',
@@ -1086,7 +1089,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '22. Tórax e Sistema Respiratório',
       text: 'Ausculta pulmonar (Murmúrio vesicular, ruídos adventícios: estertores finos/grossos, sibilos, roncos, atrito pleural — Rocco):',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: Murmúrio vesicular universalmente audível, sem ruídos adventícios (sem estertores crepitantes ou sibilos).',
     },
     {
@@ -1129,7 +1132,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '23. Sistema Cardiovascular',
       text: 'Ausculta cardíaca (Ritmo regular em 2 tempos, bulhas B1 e B2 normofonéticas, desdobramentos, sopros, atritos, B3 ou B4 — Bates):',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: Ritmo cardíaco regular em 2 tempos (RCR em 2T), bulhas normofonéticas (BNF), sem sopros auscultáveis ou atrito pericárdico; ausência de B3 ou B4.',
     },
     {
@@ -1157,7 +1160,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '24. Abdômen',
       text: '2) Ausculta abdominal (Ruídos Hidroaéreos RHA presentes/aumentados/diminuídos, sopros em aorta abdominal ou artérias renais — Rocco/Bates):',
       type: 'string',
-      required: true,
+      required: false,
       placeholder: 'ex: Ruídos hidroaéreos (RHA) normoativos nos quatro quadrantes; ausência de sopros arteriais em aorta abdominal ou ilíacas.',
     },
     {
@@ -1174,7 +1177,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '24. Abdômen',
       text: '4) Palpação superficial e profunda (Tensão da parede, dor à palpação, massas, visceromegalias, palpação de borda hepática e baço):',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: Abdome flácido, indolor à palpação superficial e profunda; sem massas palpáveis ou visceromegalias (fígado e baço não palpáveis).',
     },
     {
@@ -1183,7 +1186,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '24. Abdômen',
       text: 'Manobras especiais abdominais (Murphy, Blumberg, Giordano, McBurney, Rovsing, Psoas, Obturador — Rocco):',
       type: 'text',
-      placeholder: 'ex: Sinal de Blumberg negativo (sem peritonite); Murphy negativo (sem colecistite aguda); Giordano negativo bilateralmente (sem pielonefrite); Rovsing e Psoas negativos.',
+      placeholder: 'ex: Blumberg negativo; Murphy negativo; Giordano negativo bilateralmente. Descrever apenas as manobras realizadas e registrar a interpretação clínica separadamente.',
     },
 
     // 25. Sistema Geniturinário e Região Inguinal (Itens 125 a 127)
@@ -1298,7 +1301,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '27. Sistema Neurológico',
       text: 'Sinais de irritação meníngea (Rigidez de nuca, sinal de Brudzinski e sinal de Kernig):',
       type: 'choice',
-      required: true,
+      required: false,
       answerOption: [
         { valueCoding: { code: 'meningeos_ausentes', display: 'Sem sinais de irritação meníngea (Nuca livre, Brudzinski e Kernig negativos)' } },
         { valueCoding: { code: 'rigidez_nuca', display: 'Rigidez de nuca presente' } },
@@ -1317,7 +1320,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '28. Hipóteses Diagnósticas',
       text: 'Hipóteses Diagnósticas Principais (com codificação CID-10):',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: 1. Síndrome Coronariana Aguda sem supra de ST (CID-10 I20.0)\n2. Angina Instável de Alto Risco (TIMI 4 / HEART 7)',
     },
     {
@@ -1336,7 +1339,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '29. Conduta e Plano Terapêutico',
       text: 'Exames complementares solicitados de urgência / rotina:',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: 1. ECG de 12 derivações em < 10 min;\n2. Troponina T ultrassensível seriada (0h / 1h / 3h);\n3. Hemograma, Creatinina, Ureia, Eletrólitos, Coagulograma;\n4. Radiografia de tórax leito.',
     },
     {
@@ -1345,7 +1348,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
       category: '29. Conduta e Plano Terapêutico',
       text: 'Prescrição inicial hospitalar (medicamentos, doses, vias e horários):',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: 1. Dieta branda para cardiopata;\n2. Repouso absoluto no leito;\n3. Monitorização contínua de ECG, SpO2 e PNI;\n4. AAS 300 mg VO mastigado dose de ataque;\n5. Ticagrelor 180 mg VO dose de ataque;\n6. Enoxaparina 1 mg/kg SC de 12/12h;\n7. Nitroglicerina IV se persistência da dor precordial.',
     },
     {
@@ -1380,7 +1383,7 @@ export const HOSPITAL_ADMISSION_QUESTIONNAIRE: Questionnaire = {
   ],
 };
 
-export const OUTPATIENT_QUESTIONNAIRE: Questionnaire = {
+const OUTPATIENT_BASE: Questionnaire = {
   resourceType: 'Questionnaire',
   id: 'anamnese-ambulatorial-rapida',
   url: 'http://hospital.org/fhir/Questionnaire/anamnese-ambulatorial-rapida',
@@ -1398,7 +1401,7 @@ export const OUTPATIENT_QUESTIONNAIRE: Questionnaire = {
       category: '1. Identificação',
       text: 'Nome do paciente:',
       type: 'string',
-      required: true,
+      required: false,
       placeholder: 'ex: Carlos Eduardo Ribeiro',
     },
     {
@@ -1407,7 +1410,7 @@ export const OUTPATIENT_QUESTIONNAIRE: Questionnaire = {
       category: '1. Identificação',
       text: 'Data de nascimento:',
       type: 'date',
-      required: true,
+      required: false,
     },
     {
       linkId: 'anamnese/hda/queixa_principal',
@@ -1415,7 +1418,7 @@ export const OUTPATIENT_QUESTIONNAIRE: Questionnaire = {
       category: '2. Queixa Principal',
       text: 'Qual o principal motivo da sua consulta hoje?',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: "Check-up de rotina e dor lombar", "Controle do diabetes"...',
     },
     {
@@ -1424,7 +1427,7 @@ export const OUTPATIENT_QUESTIONNAIRE: Questionnaire = {
       category: '3. Alergias e Cuidados',
       text: 'Você tem alergia a algum remédio ou substância?',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: Nega alergias ou descrever...',
     },
     {
@@ -1454,7 +1457,7 @@ export const OUTPATIENT_QUESTIONNAIRE: Questionnaire = {
   ],
 };
 
-export const CARDIOLOGY_QUESTIONNAIRE: Questionnaire = {
+const CARDIOLOGY_BASE: Questionnaire = {
   resourceType: 'Questionnaire',
   id: 'anamnese-cardiologia-emergencia',
   url: 'http://hospital.org/fhir/Questionnaire/anamnese-cardiologia-emergencia',
@@ -1472,7 +1475,7 @@ export const CARDIOLOGY_QUESTIONNAIRE: Questionnaire = {
       category: 'Identificação',
       text: 'Nome do paciente em atendimento cardiológico:',
       type: 'string',
-      required: true,
+      required: false,
       placeholder: 'ex: Roberto Alencar dos Santos',
     },
     {
@@ -1481,7 +1484,7 @@ export const CARDIOLOGY_QUESTIONNAIRE: Questionnaire = {
       category: 'Dor Torácica',
       text: 'Há quanto tempo a dor torácica se iniciou? (Delta T)',
       type: 'choice',
-      required: true,
+      required: false,
       answerOption: [
         { valueCoding: { code: 't_menor_2h', display: 'Menos de 2 horas (Janela crítica)' } },
         { valueCoding: { code: 't_2_6h', display: 'Entre 2 e 6 horas' } },
@@ -1495,7 +1498,7 @@ export const CARDIOLOGY_QUESTIONNAIRE: Questionnaire = {
       category: 'Dor Torácica',
       text: 'Caracterização semiológica da dor precordial (Porto/Bates):',
       type: 'text',
-      required: true,
+      required: false,
       placeholder: 'ex: Dor retroesternal em aperto, irradiada para mandíbula e MSE, intensidade 8/10 EVA, com sudorese fria e náuseas.',
     },
     {
@@ -1522,6 +1525,10 @@ export const CARDIOLOGY_QUESTIONNAIRE: Questionnaire = {
     },
   ],
 };
+
+export const HOSPITAL_ADMISSION_QUESTIONNAIRE = prepareQuestionnaire(HOSPITAL_ADMISSION_BASE, true);
+export const OUTPATIENT_QUESTIONNAIRE = prepareQuestionnaire(OUTPATIENT_BASE);
+export const CARDIOLOGY_QUESTIONNAIRE = prepareQuestionnaire(CARDIOLOGY_BASE, true);
 
 export const AVAILABLE_QUESTIONNAIRES = [
   HOSPITAL_ADMISSION_QUESTIONNAIRE,

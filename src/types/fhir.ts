@@ -97,6 +97,13 @@ export interface QuestionnaireItem {
   unit?: string;
   helpText?: string;
   multiselect?: boolean;
+  parentLinkId?: string;
+  parentText?: string;
+  example?: string;
+  suggestions?: string[];
+  exclusiveOptions?: string[];
+  minValue?: number;
+  maxValue?: number;
 }
 
 export interface Questionnaire {
@@ -144,7 +151,7 @@ export interface QuestionnaireResponse {
   status: 'in-progress' | 'completed' | 'amended' | 'stopped';
   authored: string;
   subject?: {
-    reference: string;
+    reference?: string;
     display?: string;
   };
   author?: {

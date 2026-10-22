@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Check, Mic, MicOff, AlertCircle, ListChecks } from 'lucide-react';
 import { QuestionnaireItem } from '../types/fhir';
 import { ThemeConfig } from '../types/theme';
+import { hasAnswer } from '../utils/answers';
 
 interface TypeformQuestionCardProps {
   item: QuestionnaireItem;
@@ -19,6 +20,7 @@ interface TypeformQuestionCardProps {
   onChange: (value: any) => void;
   onNext: () => void;
   onPrev: () => void;
+  onFinish: () => void;
   error?: string | null;
   theme: ThemeConfig;
 }
@@ -31,12 +33,16 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
   value,
   onChange,
   onNext,
+  onFinish,
   error,
   theme,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [speechNotice, setSpeechNotice] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
+  const recognitionRef = useRef<any>(null);
+  const valueRef = useRef(value);
+  valueRef.current = value;
 
   // Auto-advance must call the latest onNext (it validates against the freshest
   // answers) and must fire once, even on a double tap or after the card changes.
@@ -53,6 +59,12 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
   useEffect(() => {
     return () => {
       if (advanceTimer.current) clearTimeout(advanceTimer.current);
+      if (recognitionRef.current) {
+        recognitionRef.current.onresult = null;
+        recognitionRef.current.onend = null;
+        recognitionRef.current.onerror = null;
+        recognitionRef.current.abort();
+      }
     };
   }, [item.linkId]);
 
@@ -80,12 +92,14 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
     }
 
     if (isRecording) {
+      recognitionRef.current?.stop();
       setIsRecording(false);
       return;
     }
 
     try {
       const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
       recognition.lang = 'pt-BR';
       recognition.continuous = false;
       recognition.interimResults = false;
@@ -97,7 +111,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
 
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
-        const currentVal = value ? `${value} ${transcript}` : transcript;
+        const currentVal = valueRef.current ? `${valueRef.current} ${transcript}` : transcript;
         onChange(currentVal);
         setIsRecording(false);
         setSpeechNotice(null);
@@ -127,9 +141,8 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Dialogs (índice, limpar respostas) own the keyboard while open
-      const target = e.target as HTMLElement | null;
-      if (target?.closest?.('[role="dialog"],[role="alertdialog"],[aria-modal="true"]')) return;
-      if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+      if (document.querySelector('[aria-modal="true"]')) return;
+      if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing || e.repeat) return;
 
       const activeTag = document.activeElement?.tagName.toLowerCase();
       if (activeTag === 'input' || activeTag === 'textarea') {
@@ -183,11 +196,13 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
       const exists = currentList.includes(optValue);
       const updated = exists
         ? currentList.filter((v) => v !== optValue)
-        : [...currentList, optValue];
+        : item.exclusiveOptions?.includes(optValue)
+          ? [optValue]
+          : [...currentList.filter(v => !item.exclusiveOptions?.includes(v)), optValue];
       onChange(updated);
     } else {
-      onChange(optValue);
-      if (theme.autoAdvanceOnSingleChoice) {
+      onChange(value === optValue ? '' : optValue);
+      if (value !== optValue && theme.autoAdvanceOnSingleChoice) {
         advanceSoon(260);
       }
     }
@@ -213,42 +228,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
       ? 'font-sans'
       : 'font-normal';
 
-  // Quick clinical suggestion chips generator
-  const getQuickChips = (): string[] => {
-    if (item.linkId.includes('pressao_arterial')) {
-      return ['120/80', '130/85', '140/90', '150/95', '160/100', '90/60'];
-    }
-    if (item.linkId.includes('fc_pulso') || item.linkId.includes('frequencia_cardiaca')) {
-      return ['64', '72', '80', '88', '102', '120'];
-    }
-    if (item.linkId.includes('temperatura')) {
-      return ['36.2', '36.6', '37.0', '37.5', '38.2', '39.0'];
-    }
-    if (item.linkId.includes('spo2') || item.linkId.includes('saturacao_o2')) {
-      return ['99', '98', '97', '95', '92', '88'];
-    }
-    if (item.linkId.includes('fr_ritmo') || item.linkId.includes('frequencia_respiratoria')) {
-      return ['16', '18', '20', '24', '28'];
-    }
-    if (item.linkId.includes('queixa_principal')) {
-      return [
-        'Dor no peito com aperto forte e falta de ar',
-        'Falta de ar súbita aos esforços',
-        'Febre persistente, tosse e prostração',
-        'Cefaleia holocraniana intensa e náuseas',
-        'Dor abdominal difusa em cólica e vômitos',
-      ];
-    }
-    if (item.linkId.includes('achados_relevantes')) {
-      return [
-        'BEG, corado, hidratado. ACV: RCR 2T, BNF sem sopros. AR: MV universalmente audível sem RA. Abdome: indolor, RHA presentes.',
-        'REG, taquipneico, sudoreico. ACV: taquicárdico sem sopros. AR: estertores crepitantes em bases. Abdome flácido.',
-      ];
-    }
-    return [];
-  };
-
-  const quickChips = getQuickChips();
+  const quickChips = item.suggestions || [];
   const isEvaScale = item.linkId.includes('dor_intensidade') || (item.unit === '/ 10' && item.type === 'integer');
 
   return (
@@ -257,11 +237,10 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
       {item.category && (
         <div className="flex items-center gap-2 mb-2 text-sm font-medium text-[#2A222B]/65">
           <span>{item.category}</span>
-          {item.required && (
-            <span className="text-amber-800 font-medium">· obrigatório</span>
-          )}
+          <span className="text-[#2A222B]/65 font-normal">· opcional</span>
         </div>
       )}
+      {item.parentText && <p className="question-parent">Detalhamento de: {item.parentText}</p>}
 
       {/* Question Header & Title */}
       <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-baseline sm:gap-3 mb-3 w-full min-w-0">
@@ -290,17 +269,17 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
         {/* SPECIAL: EVA PAIN SCALE (0 - 10) */}
         {isEvaScale && (
           <div className="w-full max-w-lg space-y-4 p-4 rounded-2xl bg-white border border-[#2A222B]/10 shadow-xs">
-            <div className="flex items-center justify-between text-xs font-semibold text-[#2A222B]/65">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-[#2A222B]/65">
               <span>0 (Sem dor)</span>
               <span className="text-sm font-bold font-mono-code text-[#2A222B] bg-[#2A222B]/10 px-2 py-0.5 rounded">
-                EVA: {value !== undefined ? `${value} / 10` : 'Selecione'}
+                EVA: {hasAnswer(value) ? `${value} / 10` : 'Não informada'}
               </span>
               <span className="text-rose-600">10 (Pior dor imaginável)</span>
             </div>
 
-            <div className="grid grid-cols-11 gap-1">
+            <div className="grid grid-cols-6 sm:grid-cols-11 gap-1">
               {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((score) => {
-                const isSelected = Number(value) === score;
+                const isSelected = hasAnswer(value) && Number(value) === score;
                 const isHigh = score >= 7;
                 const isMed = score >= 4 && score < 7;
                 return (
@@ -338,20 +317,20 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
               <textarea
                 ref={inputRef as any}
                 rows={4}
-                value={value || ''}
+                value={value ?? ''}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={item.placeholder || 'Digite sua resposta aqui...'}
                 maxLength={5000}
                 aria-invalid={!!error}
                 aria-describedby={error ? `${item.linkId}-error` : undefined}
                 aria-label={item.text}
-                className="w-full text-base md:text-xl p-3 pr-14 bg-transparent border-b-2 border-[#2A222B]/20 text-[#2A222B] placeholder:text-[#2A222B]/35 focus:border-[#2A222B] focus:outline-none transition-colors resize-none rounded-t-lg bg-[#2A222B]/[0.02]"
+                className="w-full text-base md:text-xl p-3 pr-14 bg-transparent border-b-2 border-[#2A222B]/20 text-[#2A222B] placeholder:text-[#2A222B]/35 focus:border-[#2A222B] focus:outline-none transition-colors resize-y bg-[#2A222B]/[0.02]"
               />
             ) : (
               <input
                 ref={inputRef as any}
                 type="text"
-                value={value || ''}
+                value={value ?? ''}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={item.placeholder || 'Digite sua resposta aqui...'}
                 maxLength={300}
@@ -400,9 +379,11 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
               aria-describedby={error ? `${item.linkId}-error` : undefined}
               aria-label={item.text}
               step={item.type === 'decimal' ? '0.1' : '1'}
+              min={item.minValue}
+              max={item.maxValue}
               value={value !== undefined ? value : ''}
               onChange={(e) => onChange(e.target.value)}
-              placeholder="0"
+              placeholder="Não informado"
               className="w-48 text-2xl md:text-4xl py-2 px-1 bg-transparent border-b-2 border-[#2A222B]/25 text-[#2A222B] placeholder:text-[#2A222B]/30 focus:border-[#2A222B] focus:outline-none transition-colors font-mono-code"
             />
             {item.unit && (
@@ -543,7 +524,7 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
           <div className="mt-4 pt-2 border-t border-[#2A222B]/10">
             <div className="flex items-center gap-1.5 text-xs text-[#2A222B]/60 mb-2">
               <ListChecks className="w-3.5 h-3.5 text-[#2A222B]/65" aria-hidden="true" />
-              <span>Valores frequentes (toque rápido para preencher):</span>
+              <span>Sugestões para caracterizar · selecione e complemente</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {quickChips.map((chip) => (
@@ -551,12 +532,11 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
                   key={chip}
                   type="button"
                   onClick={() => {
-                    onChange(chip);
-                    if (theme.autoAdvanceOnSingleChoice && !item.multiselect) {
-                      advanceSoon(250);
-                    }
+                    const current = typeof value === 'string' ? value.trim() : '';
+                    if (!current.split('; ').includes(chip)) onChange(current ? `${current}; ${chip}` : chip);
+                    inputRef.current?.focus();
                   }}
-                  className="min-h-9 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-mono-code text-[#2A222B] transition-colors border border-slate-200 shadow-2xs cursor-pointer"
+                  className="min-h-11 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-sm text-[#2A222B] transition-colors border border-[#2A222B]/20 cursor-pointer text-left"
                 >
                   {chip}
                 </button>
@@ -565,6 +545,8 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
           </div>
         )}
       </div>
+
+      {item.example && <details className="question-example"><summary>Como caracterizar este item</summary><p>{item.example}</p><small>Exemplo ilustrativo. Adapte ao relato ou achado deste atendimento.</small></details>}
 
       {/* Validation Error Feedback */}
       <AnimatePresence>
@@ -584,18 +566,20 @@ export const TypeformQuestionCard: React.FC<TypeformQuestionCardProps> = ({
       </AnimatePresence>
 
       {/* Typeform Action Button ("OK" / Next) */}
-      <div className="mt-5 flex items-center gap-4">
+      <div className="mt-6 flex flex-wrap items-center gap-3">
         <button
           type="button"
           onClick={onNext}
           className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-white font-medium text-base min-h-11 shadow-sm transition-[transform,opacity] duration-150 active:scale-95 hover:opacity-90 cursor-pointer"
           style={{ backgroundColor: theme.brandColor }}
         >
-          <span>OK</span>
+          <span>{hasAnswer(value) ? 'Continuar' : 'Pular item'}</span>
           <Check className="w-4 h-4 stroke-[3]" aria-hidden="true" />
         </button>
+        {hasAnswer(value) && <button type="button" className="question-text-action" onClick={() => { if (advanceTimer.current) clearTimeout(advanceTimer.current); onChange(''); }}>Limpar resposta</button>}
+        <button type="button" className="question-text-action" onClick={onFinish}>Concluir coleta</button>
         <span className="text-xs text-[#2A222B]/65 font-medium hidden sm:inline">
-          pressione <strong className="font-semibold text-[#2A222B]/70">Enter ↵</strong>
+          <strong className="font-semibold text-[#2A222B]/70">Enter</strong> continua{item.type === 'text' ? ' · Shift+Enter cria uma linha' : ''}
         </span>
       </div>
     </div>

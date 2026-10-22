@@ -2,10 +2,10 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  * .anamform - Mobile-First Typeform Medical Anamnesis with FHIR R4 & openEHR Interoperability
- * 144 Semiological Items based on Porto (8ª ed.), Bates (12ª ed.) and Rocco (2ª ed.)
+ * Optional clinical questions with guided subitems and a structured record.
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   HOSPITAL_ADMISSION_QUESTIONNAIRE,
@@ -24,9 +24,12 @@ import { CompletionScreen } from './components/CompletionScreen';
 import { TypeformQuestionCard } from './components/TypeformQuestionCard';
 import { TypeformNavigation } from './components/TypeformNavigation';
 import { SectionJumpModal } from './components/SectionJumpModal';
-import { ClinicalSummaryView } from './components/ClinicalSummaryView';
-import { SettingsTab } from './components/SettingsTab';
 import { MobileBottomNav, AppViewMode } from './components/MobileBottomNav';
+import { hasAnswer, readSavedAnswers, validateAnswer } from './utils/answers';
+import { useDialogFocus } from './utils/useDialogFocus';
+
+const ClinicalSummaryView = lazy(() => import('./components/ClinicalSummaryView').then(module => ({ default: module.ClinicalSummaryView })));
+const SettingsTab = lazy(() => import('./components/SettingsTab').then(module => ({ default: module.SettingsTab })));
 
 export default function App() {
   const [currentQuestionnaire, setCurrentQuestionnaire] = useState<Questionnaire>(
@@ -34,8 +37,7 @@ export default function App() {
   );
   const [answers, setAnswers] = useState<Record<string, any>>(() => {
     try {
-      const saved = localStorage.getItem(`anamnese_answers_${HOSPITAL_ADMISSION_QUESTIONNAIRE.id}`);
-      return saved ? JSON.parse(saved) : {};
+      return readSavedAnswers(`anamnese_answers_${HOSPITAL_ADMISSION_QUESTIONNAIRE.id}`);
     } catch {
       return {};
     }
@@ -44,6 +46,7 @@ export default function App() {
   // -1 = Welcome Screen, 0..N-1 = Question Index, N = Completion Screen
   const [currentIndex, setCurrentIndex] = useState<number>(-1);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [storageError, setStorageError] = useState(false);
   const [activeView, setActiveView] = useState<AppViewMode>('form');
 
   // Theme settings
@@ -51,7 +54,8 @@ export default function App() {
     try {
       const saved = localStorage.getItem('anamnese_theme');
       const parsed = saved ? JSON.parse(saved) : null;
-      return parsed && typeof parsed === 'object' ? { ...DEFAULT_THEME, ...parsed } : DEFAULT_THEME;
+      const restored = parsed && typeof parsed === 'object' ? { ...DEFAULT_THEME, ...parsed } : DEFAULT_THEME;
+      return restored.bgColor === '#18181B' ? { ...restored, bgColor: DEFAULT_THEME.bgColor } : restored;
     } catch {
       return DEFAULT_THEME;
     }
@@ -59,6 +63,9 @@ export default function App() {
 
   const [isSectionJumpOpen, setIsSectionJumpOpen] = useState(false);
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const resetDialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(isResetModalOpen, resetDialogRef, () => setIsResetModalOpen(false));
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [activeView, currentIndex]);
 
   // Sound effects generator via Web Audio API
   const playSubtleSound = useCallback(() => {
@@ -85,7 +92,9 @@ export default function App() {
   useEffect(() => {
     try {
       localStorage.setItem(`anamnese_answers_${currentQuestionnaire.id}`, JSON.stringify(answers));
+      setStorageError(false);
     } catch (e) {
+      setStorageError(true);
       console.warn('LocalStorage save error', e);
     }
   }, [answers, currentQuestionnaire.id]);
@@ -106,11 +115,8 @@ export default function App() {
 
   // Count answered items
   const answeredCount = useMemo(() => {
-    return Object.keys(answers).filter((k) => {
-      const val = answers[k];
-      return val !== undefined && val !== null && val !== '' && (!Array.isArray(val) || val.length > 0);
-    }).length;
-  }, [answers]);
+    return activeQuestions.filter(item => hasAnswer(answers[item.linkId])).length;
+  }, [answers, activeQuestions]);
 
   // Build FHIR QuestionnaireResponse
   const questionnaireResponse = useMemo(() => {
@@ -138,21 +144,13 @@ export default function App() {
       return;
     }
 
-    // If on a question, validate required fields
+    // Blank answers are always allowed; validate only values the user entered.
     if (currentIndex < activeQuestions.length) {
       const currentItem = activeQuestions[currentIndex];
-      if (currentItem.required) {
-        const val = answers[currentItem.linkId];
-        const isEmpty =
-          val === undefined ||
-          val === null ||
-          val === '' ||
-          (Array.isArray(val) && val.length === 0);
-
-        if (isEmpty) {
-          setValidationError('Por favor, preencha este campo obrigatório para prosseguir.');
-          return;
-        }
+      const error = validateAnswer(currentItem, answers[currentItem.linkId]);
+      if (error) {
+        setValidationError(error);
+        return;
       }
 
       setValidationError(null);
@@ -182,12 +180,13 @@ export default function App() {
   // Keyboard navigation for Arrows and Enter
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      if (isSectionJumpOpen || activeView !== 'form') return;
+      if (isSectionJumpOpen || isResetModalOpen || activeView !== 'form' || e.defaultPrevented || e.repeat || e.isComposing || e.ctrlKey || e.metaKey || e.altKey) return;
 
       const activeTag = document.activeElement?.tagName.toLowerCase();
       const isInput = activeTag === 'input' || activeTag === 'textarea';
+      if (activeTag === 'button' || activeTag === 'a' || activeTag === 'summary' || activeTag === 'select') return;
 
-      // Up arrow or Shift+Tab to go back
+      // Arrow keys navigate only outside native controls.
       if (e.key === 'ArrowUp' && !isInput) {
         e.preventDefault();
         handlePrev();
@@ -196,19 +195,19 @@ export default function App() {
       // Enter or Down arrow to go forward
       if ((e.key === 'Enter' || e.key === 'ArrowDown') && !isInput) {
         e.preventDefault();
-        handleNext();
+        if (currentIndex === -1) handleStart();
+        else handleNext();
       }
     };
 
     window.addEventListener('keydown', handleGlobalKeyDown);
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, [currentIndex, isSectionJumpOpen, activeView, activeQuestions.length]);
+  }, [currentIndex, isSectionJumpOpen, isResetModalOpen, activeView, activeQuestions, answers]);
 
   // Start at the first unanswered question when resuming a saved session
   const handleStart = () => {
     const firstPending = activeQuestions.findIndex((q) => {
-      const v = answers[q.linkId];
-      return v === undefined || v === null || v === '' || (Array.isArray(v) && v.length === 0);
+      return !hasAnswer(answers[q.linkId]);
     });
     if (answeredCount === 0) setCurrentIndex(0);
     else setCurrentIndex(firstPending === -1 ? activeQuestions.length : firstPending);
@@ -249,8 +248,7 @@ export default function App() {
   const handleSelectQuestionnaire = (q: Questionnaire) => {
     setCurrentQuestionnaire(q);
     try {
-      const saved = localStorage.getItem(`anamnese_answers_${q.id}`);
-      setAnswers(saved ? JSON.parse(saved) : {});
+      setAnswers(readSavedAnswers(`anamnese_answers_${q.id}`));
     } catch {
       setAnswers({});
     }
@@ -258,7 +256,7 @@ export default function App() {
     setValidationError(null);
   };
 
-  const progressPercent = activeQuestions.length > 0 ? Math.round(((currentIndex + 1) / activeQuestions.length) * 100) : 0;
+  const progressPercent = activeQuestions.length > 0 ? Math.round((answeredCount / activeQuestions.length) * 100) : 0;
   const currentCategory = currentIndex >= 0 && currentIndex < activeQuestions.length ? activeQuestions[currentIndex].category : undefined;
 
   return (
@@ -272,9 +270,11 @@ export default function App() {
         currentCategory={currentCategory}
         progressPercent={Math.max(0, Math.min(100, progressPercent))}
       />
+      {storageError && <p role="alert" className="no-print mx-auto max-w-3xl px-4 py-3 text-sm text-rose-800">Não foi possível salvar neste navegador. Suas respostas continuam nesta tela; copie ou baixe o prontuário antes de sair.</p>}
 
       {/* Main Content Area */}
       <main id="conteudo" className="flex-1 flex flex-col justify-center items-center relative overflow-x-hidden">
+        <Suspense fallback={<p role="status" className="px-4 py-12 text-sm text-[#2A222B]/70">Carregando visualização…</p>}>
         {/* VIEW 1: TYPEFORM FORM COLLECTOR */}
         {activeView === 'form' && (
           <div className="w-full flex-1 flex flex-col justify-center items-center pb-36 md:pb-28">
@@ -319,6 +319,7 @@ export default function App() {
                     }
                     onNext={handleNext}
                     onPrev={handlePrev}
+                    onFinish={() => setCurrentIndex(activeQuestions.length)}
                     error={validationError}
                     theme={theme}
                   />
@@ -366,8 +367,16 @@ export default function App() {
           <div className="w-full flex-1 pb-24">
             <ClinicalSummaryView
               answers={answers}
+              questionnaire={currentQuestionnaire}
               onBackToForm={() => setActiveView('form')}
-              onGoToInterop={() => setActiveView('settings')}
+              onEditItem={(linkId) => {
+                const index = activeQuestions.findIndex(item => item.linkId === linkId);
+                if (index >= 0) {
+                  setCurrentIndex(index);
+                  setValidationError(null);
+                  setActiveView('form');
+                }
+              }}
               onLoadSample={handleLoadSample}
             />
           </div>
@@ -388,6 +397,7 @@ export default function App() {
             />
           </div>
         )}
+        </Suspense>
       </main>
 
       {/* MOBILE-FIRST BOTTOM NAVIGATION BAR */}
@@ -399,7 +409,7 @@ export default function App() {
         totalQuestions={activeQuestions.length}
       />
 
-      {/* MODAL: Section Jump Drawer (All 29 Sections / 144 Items) */}
+      {/* MODAL: Section and subitem index */}
       {isSectionJumpOpen && (
         <SectionJumpModal
           questions={activeQuestions}
@@ -416,7 +426,7 @@ export default function App() {
       {/* MODAL: Reset Confirmation Dialog */}
       {isResetModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
-          <div role="alertdialog" aria-modal="true" aria-labelledby="reset-title" className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-[#2A222B]/10 space-y-4">
+          <div ref={resetDialogRef} tabIndex={-1} role="alertdialog" aria-modal="true" aria-labelledby="reset-title" className="w-full max-w-md bg-white rounded-2xl p-6 shadow-2xl border border-[#2A222B]/10 space-y-4">
             <div className="w-12 h-12 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center">
               <RotateCcw className="w-6 h-6" />
             </div>

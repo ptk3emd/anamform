@@ -82,7 +82,7 @@ export const InteroperabilityView: React.FC<InteroperabilityViewProps> = ({
     setEhrbaseSuccess(null);
     setTimeout(() => {
       setIsSubmitting(false);
-      setEhrbaseSuccess(`Composição gravada com sucesso no EHRbase! UID: ${Math.random().toString(36).substring(2, 12)}::openEHR.local::1`);
+      setEhrbaseSuccess('Simulação concluída. Nenhum dado foi enviado ou gravado em servidor.');
     }, 1200);
   };
 
@@ -121,7 +121,7 @@ export const InteroperabilityView: React.FC<InteroperabilityViewProps> = ({
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[#198754] text-white hover:bg-[#146c43] disabled:opacity-50 transition-colors shadow-xs"
           >
             <Send className="w-4 h-4" />
-            <span>{isSubmitting ? 'Transmitindo...' : 'Publicar no EHRbase'}</span>
+            <span>{isSubmitting ? 'Simulando...' : 'Simular envio ao EHRbase'}</span>
           </button>
         </div>
       </div>
@@ -134,7 +134,7 @@ export const InteroperabilityView: React.FC<InteroperabilityViewProps> = ({
             <span className="text-sm font-medium">{ehrbaseSuccess}</span>
           </div>
           <span className="text-xs font-mono-code bg-emerald-200/60 text-emerald-900 px-2 py-1 rounded">
-            HTTP 201 Created
+            Demonstração local
           </span>
         </div>
       )}
